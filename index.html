@@ -56,17 +56,10 @@
                 </div>
             </div>
 
+            <!-- Workout Log Form (under the calendar) -->
             <div class="view-header">
                 <h1>Log Workout</h1>
                 <p class="subtitle">Pick an exercise or type your own</p>
-            </div>
-
-            <!-- Workout Selector -->
-            <div class="workout-selector" id="workout-selector">
-                <h3 class="selector-title">Quick Select</h3>
-                <div class="workout-chips" id="workout-chips">
-                    <!-- Filled by JS -->
-                </div>
             </div>
 
             <form class="workout-form card" id="workout-form">
@@ -102,6 +95,23 @@
                     <span class="btn-icon">✓</span>
                 </button>
             </form>
+
+            <!-- Quick Select with Muscle Group Filters -->
+            <div class="workout-selector" id="workout-selector">
+                <h3 class="selector-title">Quick Select</h3>
+                <div class="filter-tabs" id="filter-tabs">
+                    <button class="filter-tab active" data-group="all">All</button>
+                    <button class="filter-tab" data-group="chest">Chest</button>
+                    <button class="filter-tab" data-group="back">Back</button>
+                    <button class="filter-tab" data-group="leg">Leg</button>
+                    <button class="filter-tab" data-group="bicep">Bicep</button>
+                    <button class="filter-tab" data-group="tricep">Tricep</button>
+                    <button class="filter-tab" data-group="shoulder">Shoulder</button>
+                </div>
+                <div class="workout-chips-scroll" id="workout-chips">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
 
             <!-- Today's Exercises -->
             <div class="todays-session" id="todays-session">

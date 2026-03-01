@@ -6,28 +6,40 @@
 const STORAGE_KEY = 'fitpulse_workouts';
 const TODAY_KEY = 'fitpulse_today';
 
-// ===== WORKOUT PRESETS =====
+// ===== WORKOUT PRESETS (with muscle groups) =====
 const WORKOUT_PRESETS = [
-    { name: 'Bench Press', icon: '🏋️', defaultWeight: 60, defaultReps: 8, defaultSets: 3 },
-    { name: 'Squat', icon: '🦵', defaultWeight: 80, defaultReps: 8, defaultSets: 4 },
-    { name: 'Deadlift', icon: '💀', defaultWeight: 100, defaultReps: 5, defaultSets: 3 },
-    { name: 'Overhead Press', icon: '🙆', defaultWeight: 40, defaultReps: 8, defaultSets: 3 },
-    { name: 'Barbell Row', icon: '🚣', defaultWeight: 50, defaultReps: 8, defaultSets: 3 },
-    { name: 'Pull-ups', icon: '💪', defaultWeight: 0, defaultReps: 8, defaultSets: 3 },
-    { name: 'Push-ups', icon: '🫸', defaultWeight: 0, defaultReps: 15, defaultSets: 3 },
-    { name: 'Dumbbell Curl', icon: '💪', defaultWeight: 12, defaultReps: 10, defaultSets: 3 },
-    { name: 'Tricep Extension', icon: '🦾', defaultWeight: 15, defaultReps: 10, defaultSets: 3 },
-    { name: 'Leg Press', icon: '🦿', defaultWeight: 120, defaultReps: 10, defaultSets: 3 },
-    { name: 'Lat Pulldown', icon: '⬇️', defaultWeight: 45, defaultReps: 10, defaultSets: 3 },
-    { name: 'Chest Fly', icon: '🦅', defaultWeight: 14, defaultReps: 12, defaultSets: 3 },
-    { name: 'Lateral Raise', icon: '🤸', defaultWeight: 8, defaultReps: 12, defaultSets: 3 },
-    { name: 'Lunges', icon: '🚶', defaultWeight: 20, defaultReps: 10, defaultSets: 3 },
-    { name: 'Calf Raise', icon: '🦶', defaultWeight: 40, defaultReps: 15, defaultSets: 3 },
-    { name: 'Plank', icon: '🧘', defaultWeight: 0, defaultReps: 1, defaultSets: 3 },
-    { name: 'Hip Thrust', icon: '🍑', defaultWeight: 60, defaultReps: 10, defaultSets: 3 },
-    { name: 'Dips', icon: '⬇️', defaultWeight: 0, defaultReps: 10, defaultSets: 3 },
-    { name: 'Romanian Deadlift', icon: '🏋️', defaultWeight: 60, defaultReps: 10, defaultSets: 3 },
-    { name: 'Incline Bench', icon: '📐', defaultWeight: 50, defaultReps: 8, defaultSets: 3 },
+    // Chest
+    { name: 'Bench Press', icon: '🏋️', group: 'chest', defaultWeight: 60, defaultReps: 8, defaultSets: 3 },
+    { name: 'Incline Bench', icon: '📐', group: 'chest', defaultWeight: 50, defaultReps: 8, defaultSets: 3 },
+    { name: 'Chest Fly', icon: '🦅', group: 'chest', defaultWeight: 14, defaultReps: 12, defaultSets: 3 },
+    { name: 'Push-ups', icon: '🫸', group: 'chest', defaultWeight: 0, defaultReps: 15, defaultSets: 3 },
+    { name: 'Dips', icon: '⬇️', group: 'chest', defaultWeight: 0, defaultReps: 10, defaultSets: 3 },
+    // Back
+    { name: 'Barbell Row', icon: '🚣', group: 'back', defaultWeight: 50, defaultReps: 8, defaultSets: 3 },
+    { name: 'Lat Pulldown', icon: '⬇️', group: 'back', defaultWeight: 45, defaultReps: 10, defaultSets: 3 },
+    { name: 'Pull-ups', icon: '💪', group: 'back', defaultWeight: 0, defaultReps: 8, defaultSets: 3 },
+    { name: 'Deadlift', icon: '💀', group: 'back', defaultWeight: 100, defaultReps: 5, defaultSets: 3 },
+    { name: 'Romanian Deadlift', icon: '🏋️', group: 'back', defaultWeight: 60, defaultReps: 10, defaultSets: 3 },
+    // Leg
+    { name: 'Squat', icon: '🦵', group: 'leg', defaultWeight: 80, defaultReps: 8, defaultSets: 4 },
+    { name: 'Leg Press', icon: '🦿', group: 'leg', defaultWeight: 120, defaultReps: 10, defaultSets: 3 },
+    { name: 'Lunges', icon: '🚶', group: 'leg', defaultWeight: 20, defaultReps: 10, defaultSets: 3 },
+    { name: 'Calf Raise', icon: '🦶', group: 'leg', defaultWeight: 40, defaultReps: 15, defaultSets: 3 },
+    { name: 'Hip Thrust', icon: '🍑', group: 'leg', defaultWeight: 60, defaultReps: 10, defaultSets: 3 },
+    // Bicep
+    { name: 'Dumbbell Curl', icon: '💪', group: 'bicep', defaultWeight: 12, defaultReps: 10, defaultSets: 3 },
+    { name: 'Hammer Curl', icon: '🔨', group: 'bicep', defaultWeight: 10, defaultReps: 10, defaultSets: 3 },
+    { name: 'Barbell Curl', icon: '🏋️', group: 'bicep', defaultWeight: 20, defaultReps: 10, defaultSets: 3 },
+    // Tricep
+    { name: 'Tricep Extension', icon: '🦾', group: 'tricep', defaultWeight: 15, defaultReps: 10, defaultSets: 3 },
+    { name: 'Skull Crushers', icon: '💀', group: 'tricep', defaultWeight: 20, defaultReps: 10, defaultSets: 3 },
+    { name: 'Tricep Pushdown', icon: '⬇️', group: 'tricep', defaultWeight: 25, defaultReps: 12, defaultSets: 3 },
+    // Shoulder
+    { name: 'Overhead Press', icon: '🙆', group: 'shoulder', defaultWeight: 40, defaultReps: 8, defaultSets: 3 },
+    { name: 'Lateral Raise', icon: '🤸', group: 'shoulder', defaultWeight: 8, defaultReps: 12, defaultSets: 3 },
+    { name: 'Face Pull', icon: '🎯', group: 'shoulder', defaultWeight: 15, defaultReps: 15, defaultSets: 3 },
+    { name: 'Front Raise', icon: '🙌', group: 'shoulder', defaultWeight: 8, defaultReps: 12, defaultSets: 3 },
+    { name: 'Plank', icon: '🧘', group: 'shoulder', defaultWeight: 0, defaultReps: 1, defaultSets: 3 },
 ];
 
 // ===== STATE =====
@@ -39,6 +51,7 @@ let timerRemaining = 0;
 let timerTotal = 0;
 let timerRunning = false;
 let selectedPreset = null;
+let activeGroup = 'all';
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
@@ -46,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupNavigation();
     setupWorkoutForm();
     setupWorkoutSelector();
+    setupFilterTabs();
     setupTimer();
     setupCalendar();
     renderWeekTracker();
@@ -124,15 +138,38 @@ function renderWeekTracker() {
     });
 }
 
+// ===== FILTER TABS =====
+function setupFilterTabs() {
+    const tabs = document.querySelectorAll('.filter-tab');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            activeGroup = tab.dataset.group;
+            renderChips();
+        });
+    });
+}
+
 // ===== WORKOUT SELECTOR =====
 function setupWorkoutSelector() {
+    renderChips();
+}
+
+function renderChips() {
     const chipsContainer = document.getElementById('workout-chips');
     chipsContainer.innerHTML = '';
 
-    WORKOUT_PRESETS.forEach((preset, index) => {
+    const filtered = activeGroup === 'all'
+        ? WORKOUT_PRESETS
+        : WORKOUT_PRESETS.filter(p => p.group === activeGroup);
+
+    filtered.forEach((preset) => {
+        const index = WORKOUT_PRESETS.indexOf(preset);
         const chip = document.createElement('button');
         chip.type = 'button';
         chip.className = 'workout-chip';
+        if (selectedPreset === index) chip.classList.add('active');
         chip.innerHTML = `<span class="workout-chip-icon">${preset.icon}</span>${preset.name}`;
         chip.addEventListener('click', () => selectPreset(index, chip));
         chipsContainer.appendChild(chip);
