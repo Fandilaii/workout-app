@@ -2,11 +2,9 @@
    FitPulse — Application Logic
    ============================================= */
 
-// ===== STORAGE KEYS =====
 const STORAGE_KEY = 'fitpulse_workouts';
 const TODAY_KEY = 'fitpulse_today';
 
-// ===== WORKOUT PRESETS =====
 const WORKOUT_PRESETS = [
     { name: 'Bench Press', icon: '🏋️', defaultWeight: 60, defaultReps: 8, defaultSets: 3 },
     { name: 'Squat', icon: '🦵', defaultWeight: 80, defaultReps: 8, defaultSets: 4 },
@@ -30,7 +28,6 @@ const WORKOUT_PRESETS = [
     { name: 'Incline Bench', icon: '📐', defaultWeight: 50, defaultReps: 8, defaultSets: 3 },
 ];
 
-// ===== STATE =====
 let todayExercises = [];
 let allWorkouts = [];
 let calendarDate = new Date();
@@ -48,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupWorkoutSelector();
     setupTimer();
     setupCalendar();
+    setupAccountModal();
     renderWeekTracker();
     updateTodayView();
     updateHistoryView();
@@ -80,6 +78,34 @@ function getTodayString() {
 
 function getWorkoutDates() {
     return allWorkouts.map(w => w.date);
+}
+
+// ===== ACCOUNT MODAL =====
+function setupAccountModal() {
+    const modal = document.getElementById('login-modal');
+    const openBtn = document.getElementById('account-btn');
+    const closeBtn = document.getElementById('modal-close');
+    const submitBtn = document.getElementById('login-submit');
+
+    openBtn.addEventListener('click', () => {
+        modal.classList.add('active');
+    });
+
+    closeBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+    });
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+        }
+    });
+
+    submitBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        showToast('Login coming soon! Data saved locally for now.', 'success');
+        modal.classList.remove('active');
+    });
 }
 
 // ===== 7-DAY WEEK TRACKER =====
@@ -142,7 +168,6 @@ function setupWorkoutSelector() {
 function selectPreset(index, chipEl) {
     const preset = WORKOUT_PRESETS[index];
 
-    // Toggle active state
     document.querySelectorAll('.workout-chip').forEach(c => c.classList.remove('active'));
 
     if (selectedPreset === index) {
@@ -154,12 +179,13 @@ function selectPreset(index, chipEl) {
     selectedPreset = index;
     chipEl.classList.add('active');
 
-    // Fill form
     document.getElementById('exercise-name').value = preset.name;
     document.getElementById('exercise-weight').value = preset.defaultWeight || '';
     document.getElementById('exercise-reps').value = preset.defaultReps || '';
     document.getElementById('exercise-sets').value = preset.defaultSets || '';
-    document.getElementById('exercise-name').focus();
+
+    // Scroll form into view
+    document.getElementById('workout-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function clearForm() {
@@ -185,10 +211,10 @@ function setupNavigation() {
             const targetView = document.getElementById(`view-${viewName}`);
             if (targetView) targetView.classList.add('active');
 
-            if (viewName === 'history') {
-                updateHistoryView();
-                renderWeekTracker();
-            }
+            // Scroll to top on view change
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            if (viewName === 'history') { updateHistoryView(); renderWeekTracker(); }
             if (viewName === 'calendar') updateCalendarView();
             if (viewName === 'workout') renderWeekTracker();
         });
@@ -216,7 +242,6 @@ function setupWorkoutForm() {
         saveTodayExercises();
         updateTodayView();
         clearForm();
-        document.getElementById('exercise-name').focus();
         showToast('Exercise logged! 💪', 'success');
     });
 
@@ -267,7 +292,7 @@ function updateTodayView() {
 
     if (todayExercises.length === 0) {
         list.innerHTML = '';
-        list.appendChild(createEmptyState('🏃', 'No exercises logged today. Start your workout!'));
+        list.appendChild(createEmptyState('🏃', 'No exercises logged today.'));
         finishBtn.style.display = 'none';
         countBadge.textContent = '0 exercises';
         return;
@@ -277,22 +302,22 @@ function updateTodayView() {
     finishBtn.style.display = 'flex';
 
     list.innerHTML = todayExercises.map(ex => `
-        <div class="exercise-item" data-id="${ex.id}">
+        <div class="exercise-item">
             <div class="exercise-info">
                 <div class="exercise-name">${escapeHtml(ex.name)}</div>
                 <div class="exercise-details">
-                    <span class="exercise-detail-item">🏋️ ${ex.weight} kg</span>
+                    <span class="exercise-detail-item">🏋️ ${ex.weight}kg</span>
                     <span class="exercise-detail-item">🔄 ${ex.reps} reps</span>
                     <span class="exercise-detail-item">📊 ${ex.sets} sets</span>
                 </div>
                 ${ex.notes ? `<div class="exercise-notes-preview">"${escapeHtml(ex.notes)}"</div>` : ''}
             </div>
-            <button class="exercise-delete" onclick="deleteExercise(${ex.id})" title="Remove">🗑️</button>
+            <button class="exercise-delete" onclick="deleteExercise(${ex.id})">🗑️</button>
         </div>
     `).join('');
 }
 
-// ===== HISTORY VIEW =====
+// ===== HISTORY =====
 function updateHistoryView() {
     const list = document.getElementById('history-list');
     const totalEl = document.getElementById('stat-total-workouts');
@@ -311,7 +336,7 @@ function updateHistoryView() {
 
     if (allWorkouts.length === 0) {
         list.innerHTML = '';
-        list.appendChild(createEmptyState('📭', 'No workout history yet. Complete your first workout!'));
+        list.appendChild(createEmptyState('📭', 'No workout history yet.'));
         return;
     }
 
@@ -319,16 +344,16 @@ function updateHistoryView() {
         <div class="history-card">
             <div class="history-card-header">
                 <span class="history-date">${formatDate(workout.date)}</span>
-                <div style="display:flex; align-items:center; gap:8px;">
+                <div style="display:flex;align-items:center;gap:8px;">
                     <span class="history-count">${workout.exercises.length} exercise${workout.exercises.length !== 1 ? 's' : ''}</span>
-                    <button class="history-delete" onclick="deleteWorkout(${workout.id})" title="Delete">🗑️</button>
+                    <button class="history-delete" onclick="deleteWorkout(${workout.id})">🗑️</button>
                 </div>
             </div>
             <div class="history-exercises">
                 ${workout.exercises.map(ex => `
                     <div class="history-exercise-row">
                         <span class="history-exercise-name">${escapeHtml(ex.name)}</span>
-                        <span class="history-exercise-stats">${ex.weight}kg × ${ex.reps} reps × ${ex.sets} sets</span>
+                        <span class="history-exercise-stats">${ex.weight}kg × ${ex.reps} × ${ex.sets}</span>
                     </div>
                 `).join('')}
             </div>
@@ -347,7 +372,6 @@ function deleteWorkout(id) {
 
 function calculateStreak() {
     if (allWorkouts.length === 0) return 0;
-
     const dates = [...new Set(allWorkouts.map(w => w.date))].sort().reverse();
     let streak = 0;
     const today = new Date();
@@ -357,14 +381,9 @@ function calculateStreak() {
         const checkDate = new Date(today);
         checkDate.setDate(checkDate.getDate() - i);
         const checkStr = checkDate.toISOString().split('T')[0];
-
-        if (dates.includes(checkStr)) {
-            streak++;
-        } else {
-            break;
-        }
+        if (dates.includes(checkStr)) { streak++; }
+        else { break; }
     }
-
     return streak;
 }
 
@@ -374,7 +393,6 @@ function setupCalendar() {
         calendarDate.setMonth(calendarDate.getMonth() - 1);
         updateCalendarView();
     });
-
     document.getElementById('cal-next').addEventListener('click', () => {
         calendarDate.setMonth(calendarDate.getMonth() + 1);
         updateCalendarView();
@@ -387,7 +405,6 @@ function updateCalendarView() {
 
     const year = calendarDate.getFullYear();
     const month = calendarDate.getMonth();
-
     document.getElementById('calendar-month').textContent = `${monthNames[month]} ${year}`;
 
     const grid = document.getElementById('calendar-grid');
@@ -398,9 +415,7 @@ function updateCalendarView() {
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const daysInPrevMonth = new Date(year, month, 0).getDate();
-
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = new Date().toISOString().split('T')[0];
     const workoutDates = getWorkoutDates();
 
     for (let i = firstDay - 1; i >= 0; i--) {
@@ -414,10 +429,8 @@ function updateCalendarView() {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const el = document.createElement('div');
         el.className = 'cal-day';
-
         if (dateStr === todayStr) el.classList.add('today');
         if (workoutDates.includes(dateStr)) el.classList.add('has-workout');
-
         el.textContent = day;
         grid.appendChild(el);
     }
@@ -443,10 +456,7 @@ function setupTimer() {
     const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
     const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
     gradient.id = 'timer-gradient';
-    gradient.innerHTML = `
-        <stop offset="0%" stop-color="#50C878"/>
-        <stop offset="100%" stop-color="#6ed492"/>
-    `;
+    gradient.innerHTML = `<stop offset="0%" stop-color="#50C878"/><stop offset="100%" stop-color="#6ed492"/>`;
     defs.appendChild(gradient);
     svg.prepend(defs);
 
@@ -454,20 +464,15 @@ function setupTimer() {
         btn.addEventListener('click', () => {
             presetBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-
-            const seconds = parseInt(btn.dataset.time);
-            timerTotal = seconds;
-            timerRemaining = seconds;
+            timerTotal = parseInt(btn.dataset.time);
+            timerRemaining = timerTotal;
             timerRunning = false;
-
             clearInterval(timerInterval);
             updateTimerDisplay();
-
             startBtn.disabled = false;
             startBtn.style.display = 'inline-flex';
             pauseBtn.style.display = 'none';
             resetBtn.style.display = 'none';
-
             document.getElementById('timer-label').textContent = 'Ready';
             document.getElementById('timer-display').classList.remove('pulsing');
         });
@@ -480,7 +485,6 @@ function setupTimer() {
 
 function startTimer() {
     if (timerTotal === 0) return;
-
     timerRunning = true;
     document.getElementById('timer-start').style.display = 'none';
     document.getElementById('timer-pause').style.display = 'inline-flex';
@@ -490,24 +494,20 @@ function startTimer() {
 
     timerInterval = setInterval(() => {
         timerRemaining--;
-
         if (timerRemaining <= 0) {
             clearInterval(timerInterval);
             timerRunning = false;
             timerRemaining = 0;
             updateTimerDisplay();
-
             document.getElementById('timer-label').textContent = 'Done! 🎉';
             document.getElementById('timer-display').classList.add('pulsing');
             document.getElementById('timer-start').style.display = 'inline-flex';
             document.getElementById('timer-start').textContent = 'Restart';
             document.getElementById('timer-pause').style.display = 'none';
-
             playTimerBeep();
-            showToast('Rest timer complete! Get back to it! 💪', 'success');
+            showToast('Rest complete! Get back to it! 💪', 'success');
             return;
         }
-
         updateTimerDisplay();
     }, 1000);
 }
@@ -532,7 +532,6 @@ function resetTimer() {
     timerRunning = false;
     timerRemaining = timerTotal;
     updateTimerDisplay();
-
     document.getElementById('timer-start').style.display = 'inline-flex';
     document.getElementById('timer-start').textContent = 'Start';
     document.getElementById('timer-pause').style.display = 'none';
@@ -544,66 +543,57 @@ function resetTimer() {
 }
 
 function updateTimerDisplay() {
-    const minutes = Math.floor(timerRemaining / 60);
-    const seconds = timerRemaining % 60;
-    document.getElementById('timer-value').textContent = `${minutes}:${String(seconds).padStart(2, '0')}`;
-
-    const circumference = 2 * Math.PI * 90;
+    const m = Math.floor(timerRemaining / 60);
+    const s = timerRemaining % 60;
+    document.getElementById('timer-value').textContent = `${m}:${String(s).padStart(2, '0')}`;
+    const circ = 2 * Math.PI * 90;
     const progress = timerTotal > 0 ? (timerTotal - timerRemaining) / timerTotal : 0;
-    const offset = circumference * (1 - progress);
-    document.getElementById('timer-ring-progress').style.strokeDashoffset = offset;
+    document.getElementById('timer-ring-progress').style.strokeDashoffset = circ * (1 - progress);
 }
 
 function playTimerBeep() {
     try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        [0, 0.2, 0.4].forEach(delay => {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.frequency.value = 800;
-            osc.type = 'sine';
-            gain.gain.value = 0.3;
-            osc.start(audioCtx.currentTime + delay);
-            osc.stop(audioCtx.currentTime + delay + 0.15);
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        [0, 0.2, 0.4].forEach(d => {
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.frequency.value = 800; o.type = 'sine'; g.gain.value = 0.3;
+            o.start(ctx.currentTime + d); o.stop(ctx.currentTime + d + 0.15);
         });
     } catch (e) { }
 }
 
-// ===== EXERCISE SUGGESTIONS =====
+// ===== SUGGESTIONS =====
 function populateExerciseSuggestions() {
     const datalist = document.getElementById('exercise-suggestions');
-    const presetNames = WORKOUT_PRESETS.map(p => p.name);
-    const historyNames = allWorkouts.flatMap(w => w.exercises.map(e => e.name));
-    const allNames = [...new Set([...presetNames, ...historyNames])].sort();
-    datalist.innerHTML = allNames.map(name => `<option value="${name}">`).join('');
+    const names = [...new Set([
+        ...WORKOUT_PRESETS.map(p => p.name),
+        ...allWorkouts.flatMap(w => w.exercises.map(e => e.name))
+    ])].sort();
+    datalist.innerHTML = names.map(n => `<option value="${n}">`).join('');
 }
 
 // ===== UTILITIES =====
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+function formatDate(ds) {
+    const d = new Date(ds + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-function formatDate(dateStr) {
-    const date = new Date(dateStr + 'T00:00:00');
-    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+function createEmptyState(icon, msg) {
+    const d = document.createElement('div');
+    d.className = 'empty-state';
+    d.innerHTML = `<span class="empty-icon">${icon}</span><p>${msg}</p>`;
+    return d;
 }
 
-function createEmptyState(icon, message) {
-    const div = document.createElement('div');
-    div.className = 'empty-state';
-    div.innerHTML = `<span class="empty-icon">${icon}</span><p>${message}</p>`;
-    return div;
-}
-
-function showToast(message, type = 'success') {
-    const container = document.getElementById('toast-container');
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span> ${message}`;
-    container.appendChild(toast);
-    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3000);
+function showToast(msg, type = 'success') {
+    const c = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span> ${msg}`;
+    c.appendChild(t);
+    setTimeout(() => { if (t.parentNode) t.remove(); }, 3000);
 }
