@@ -127,8 +127,7 @@ body::before {
 
 .week-days {
     display: flex;
-    justify-content: center;
-    gap: 10px;
+    justify-content: space-between;
 }
 
 .week-day {
