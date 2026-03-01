@@ -1,20 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Personal Workout Assistant - Track your workouts, log exercises, and monitor your fitness progress with rest timers and calendar view.">
+    <meta name="description"
+        content="FitPulse — Track your workouts, log exercises, and monitor your fitness progress with rest timers and calendar view.">
     <title>FitPulse — Personal Workout Assistant</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar" id="navbar">
         <div class="nav-brand">
-            <span class="brand-icon">🏋️</span>
+            <img src="favicon.png" alt="FitPulse" class="brand-icon-img">
             <span class="brand-text">FitPulse</span>
         </div>
         <div class="nav-links">
@@ -42,15 +47,33 @@
 
         <!-- ===== WORKOUT VIEW ===== -->
         <section class="view active" id="view-workout">
-            <div class="view-header">
-                <h1>Log Workout</h1>
-                <p class="subtitle">Record your exercises and track your progress</p>
+
+            <!-- 7-Day Tracker -->
+            <div class="week-tracker" id="week-tracker">
+                <h2 class="week-tracker-title">This Week</h2>
+                <div class="week-days" id="week-days">
+                    <!-- Filled by JS -->
+                </div>
             </div>
 
-            <form class="workout-form glass-card" id="workout-form">
+            <div class="view-header">
+                <h1>Log Workout</h1>
+                <p class="subtitle">Pick an exercise or type your own</p>
+            </div>
+
+            <!-- Workout Selector -->
+            <div class="workout-selector" id="workout-selector">
+                <h3 class="selector-title">Quick Select</h3>
+                <div class="workout-chips" id="workout-chips">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+
+            <form class="workout-form card" id="workout-form">
                 <div class="form-group">
                     <label for="exercise-name">Exercise Name</label>
-                    <input type="text" id="exercise-name" placeholder="e.g. Bench Press, Squat, Deadlift..." required autocomplete="off" list="exercise-suggestions">
+                    <input type="text" id="exercise-name" placeholder="e.g. Bench Press, Squat, Deadlift..." required
+                        autocomplete="off" list="exercise-suggestions">
                     <datalist id="exercise-suggestions"></datalist>
                 </div>
 
@@ -74,9 +97,9 @@
                     <textarea id="exercise-notes" placeholder="How did it feel? Any PRs?" rows="2"></textarea>
                 </div>
 
-                <button type="submit" class="btn btn-primary btn-glow" id="log-exercise-btn">
+                <button type="submit" class="btn btn-primary" id="log-exercise-btn">
                     <span>Log Exercise</span>
-                    <span class="btn-icon">✨</span>
+                    <span class="btn-icon">✓</span>
                 </button>
             </form>
 
@@ -101,21 +124,25 @@
 
         <!-- ===== HISTORY VIEW ===== -->
         <section class="view" id="view-history">
+            <div class="week-tracker" id="week-tracker-history">
+                <h2 class="week-tracker-title">This Week</h2>
+                <div class="week-days" id="week-days-history"></div>
+            </div>
             <div class="view-header">
                 <h1>Workout History</h1>
                 <p class="subtitle">Review your past workouts and progress</p>
             </div>
 
             <div class="stats-row" id="stats-row">
-                <div class="stat-card glass-card">
+                <div class="stat-card card">
                     <span class="stat-value" id="stat-total-workouts">0</span>
                     <span class="stat-label">Total Workouts</span>
                 </div>
-                <div class="stat-card glass-card">
+                <div class="stat-card card">
                     <span class="stat-value" id="stat-this-month">0</span>
                     <span class="stat-label">This Month</span>
                 </div>
-                <div class="stat-card glass-card">
+                <div class="stat-card card">
                     <span class="stat-value" id="stat-streak">0</span>
                     <span class="stat-label">Day Streak 🔥</span>
                 </div>
@@ -131,12 +158,12 @@
 
         <!-- ===== CALENDAR VIEW ===== -->
         <section class="view" id="view-calendar">
-            <div class="view-header">
+            <div class="view-header" style="padding-top: 24px;">
                 <h1>Workout Calendar</h1>
                 <p class="subtitle">See your workout days at a glance</p>
             </div>
 
-            <div class="calendar-container glass-card" id="calendar-container">
+            <div class="calendar-container card" id="calendar-container">
                 <div class="calendar-nav">
                     <button class="btn btn-icon-only" id="cal-prev">◀</button>
                     <h3 class="calendar-month" id="calendar-month">March 2026</h3>
@@ -160,12 +187,12 @@
 
         <!-- ===== TIMER VIEW ===== -->
         <section class="view" id="view-timer">
-            <div class="view-header">
+            <div class="view-header" style="padding-top: 24px;">
                 <h1>Rest Timer</h1>
                 <p class="subtitle">Time your rest between sets and workouts</p>
             </div>
 
-            <div class="timer-container glass-card" id="timer-container">
+            <div class="timer-container card" id="timer-container">
                 <div class="timer-display" id="timer-display">
                     <svg class="timer-ring" viewBox="0 0 200 200">
                         <circle class="timer-ring-bg" cx="100" cy="100" r="90"></circle>
@@ -194,7 +221,7 @@
                 </div>
 
                 <div class="timer-controls">
-                    <button class="btn btn-primary btn-glow" id="timer-start" disabled>Start</button>
+                    <button class="btn btn-primary" id="timer-start" disabled>Start</button>
                     <button class="btn btn-secondary" id="timer-pause" style="display:none;">Pause</button>
                     <button class="btn btn-danger" id="timer-reset" style="display:none;">Reset</button>
                 </div>
@@ -205,11 +232,7 @@
     <!-- Toast Notification -->
     <div class="toast-container" id="toast-container"></div>
 
-    <!-- Audio for timer -->
-    <audio id="timer-beep" preload="auto">
-        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgkKusm2xETkp+m6KPYDk3VoCSm5JpRUNMc46Wh2Q/PE9wgoiGdlJIUneCgoR5W09YaHd+foFwY1tecXx7fXl0bWxobXV1eXZ0cGtrbmpvcHBtamhnZ2loa2xtbm9vb25tbGxsbG1tbm5vb29vb29vb29vb29ubm5ubm5vb29vb29vb29vb29vb29ubm5ubm5ubm5ubm5ubm5ubm5ubm9vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29v" type="audio/wav">
-    </audio>
-
     <script src="app.js"></script>
 </body>
+
 </html>

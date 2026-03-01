@@ -6,6 +6,30 @@
 const STORAGE_KEY = 'fitpulse_workouts';
 const TODAY_KEY = 'fitpulse_today';
 
+// ===== WORKOUT PRESETS =====
+const WORKOUT_PRESETS = [
+    { name: 'Bench Press', icon: '🏋️', defaultWeight: 60, defaultReps: 8, defaultSets: 3 },
+    { name: 'Squat', icon: '🦵', defaultWeight: 80, defaultReps: 8, defaultSets: 4 },
+    { name: 'Deadlift', icon: '💀', defaultWeight: 100, defaultReps: 5, defaultSets: 3 },
+    { name: 'Overhead Press', icon: '🙆', defaultWeight: 40, defaultReps: 8, defaultSets: 3 },
+    { name: 'Barbell Row', icon: '🚣', defaultWeight: 50, defaultReps: 8, defaultSets: 3 },
+    { name: 'Pull-ups', icon: '💪', defaultWeight: 0, defaultReps: 8, defaultSets: 3 },
+    { name: 'Push-ups', icon: '🫸', defaultWeight: 0, defaultReps: 15, defaultSets: 3 },
+    { name: 'Dumbbell Curl', icon: '💪', defaultWeight: 12, defaultReps: 10, defaultSets: 3 },
+    { name: 'Tricep Extension', icon: '🦾', defaultWeight: 15, defaultReps: 10, defaultSets: 3 },
+    { name: 'Leg Press', icon: '🦿', defaultWeight: 120, defaultReps: 10, defaultSets: 3 },
+    { name: 'Lat Pulldown', icon: '⬇️', defaultWeight: 45, defaultReps: 10, defaultSets: 3 },
+    { name: 'Chest Fly', icon: '🦅', defaultWeight: 14, defaultReps: 12, defaultSets: 3 },
+    { name: 'Lateral Raise', icon: '🤸', defaultWeight: 8, defaultReps: 12, defaultSets: 3 },
+    { name: 'Lunges', icon: '🚶', defaultWeight: 20, defaultReps: 10, defaultSets: 3 },
+    { name: 'Calf Raise', icon: '🦶', defaultWeight: 40, defaultReps: 15, defaultSets: 3 },
+    { name: 'Plank', icon: '🧘', defaultWeight: 0, defaultReps: 1, defaultSets: 3 },
+    { name: 'Hip Thrust', icon: '🍑', defaultWeight: 60, defaultReps: 10, defaultSets: 3 },
+    { name: 'Dips', icon: '⬇️', defaultWeight: 0, defaultReps: 10, defaultSets: 3 },
+    { name: 'Romanian Deadlift', icon: '🏋️', defaultWeight: 60, defaultReps: 10, defaultSets: 3 },
+    { name: 'Incline Bench', icon: '📐', defaultWeight: 50, defaultReps: 8, defaultSets: 3 },
+];
+
 // ===== STATE =====
 let todayExercises = [];
 let allWorkouts = [];
@@ -14,14 +38,17 @@ let timerInterval = null;
 let timerRemaining = 0;
 let timerTotal = 0;
 let timerRunning = false;
+let selectedPreset = null;
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
     setupNavigation();
     setupWorkoutForm();
+    setupWorkoutSelector();
     setupTimer();
     setupCalendar();
+    renderWeekTracker();
     updateTodayView();
     updateHistoryView();
     updateCalendarView();
@@ -55,6 +82,96 @@ function getWorkoutDates() {
     return allWorkouts.map(w => w.date);
 }
 
+// ===== 7-DAY WEEK TRACKER =====
+function renderWeekTracker() {
+    const containers = [
+        document.getElementById('week-days'),
+        document.getElementById('week-days-history'),
+    ];
+
+    const today = new Date();
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const workoutDates = getWorkoutDates();
+
+    containers.forEach(container => {
+        if (!container) return;
+        container.innerHTML = '';
+
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toISOString().split('T')[0];
+            const isToday = i === 0;
+            const hasWorkout = workoutDates.includes(dateStr);
+
+            const dayEl = document.createElement('div');
+            dayEl.className = 'week-day';
+
+            const label = document.createElement('span');
+            label.className = 'week-day-label';
+            label.textContent = dayNames[date.getDay()];
+
+            const circle = document.createElement('div');
+            circle.className = 'week-day-circle';
+            if (isToday) circle.classList.add('today');
+            if (hasWorkout) circle.classList.add('has-workout');
+            circle.textContent = date.getDate();
+
+            dayEl.appendChild(label);
+            dayEl.appendChild(circle);
+            container.appendChild(dayEl);
+        }
+    });
+}
+
+// ===== WORKOUT SELECTOR =====
+function setupWorkoutSelector() {
+    const chipsContainer = document.getElementById('workout-chips');
+    chipsContainer.innerHTML = '';
+
+    WORKOUT_PRESETS.forEach((preset, index) => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'workout-chip';
+        chip.innerHTML = `<span class="workout-chip-icon">${preset.icon}</span>${preset.name}`;
+        chip.addEventListener('click', () => selectPreset(index, chip));
+        chipsContainer.appendChild(chip);
+    });
+}
+
+function selectPreset(index, chipEl) {
+    const preset = WORKOUT_PRESETS[index];
+
+    // Toggle active state
+    document.querySelectorAll('.workout-chip').forEach(c => c.classList.remove('active'));
+
+    if (selectedPreset === index) {
+        selectedPreset = null;
+        clearForm();
+        return;
+    }
+
+    selectedPreset = index;
+    chipEl.classList.add('active');
+
+    // Fill form
+    document.getElementById('exercise-name').value = preset.name;
+    document.getElementById('exercise-weight').value = preset.defaultWeight || '';
+    document.getElementById('exercise-reps').value = preset.defaultReps || '';
+    document.getElementById('exercise-sets').value = preset.defaultSets || '';
+    document.getElementById('exercise-name').focus();
+}
+
+function clearForm() {
+    document.getElementById('exercise-name').value = '';
+    document.getElementById('exercise-weight').value = '';
+    document.getElementById('exercise-reps').value = '';
+    document.getElementById('exercise-sets').value = '';
+    document.getElementById('exercise-notes').value = '';
+    selectedPreset = null;
+    document.querySelectorAll('.workout-chip').forEach(c => c.classList.remove('active'));
+}
+
 // ===== NAVIGATION =====
 function setupNavigation() {
     const navBtns = document.querySelectorAll('.nav-btn');
@@ -66,13 +183,14 @@ function setupNavigation() {
 
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             const targetView = document.getElementById(`view-${viewName}`);
-            if (targetView) {
-                targetView.classList.add('active');
-            }
+            if (targetView) targetView.classList.add('active');
 
-            // Refresh views
-            if (viewName === 'history') updateHistoryView();
+            if (viewName === 'history') {
+                updateHistoryView();
+                renderWeekTracker();
+            }
             if (viewName === 'calendar') updateCalendarView();
+            if (viewName === 'workout') renderWeekTracker();
         });
     });
 }
@@ -97,8 +215,7 @@ function setupWorkoutForm() {
         todayExercises.push(exercise);
         saveTodayExercises();
         updateTodayView();
-
-        form.reset();
+        clearForm();
         document.getElementById('exercise-name').focus();
         showToast('Exercise logged! 💪', 'success');
     });
@@ -119,7 +236,6 @@ function finishWorkout() {
         timestamp: new Date().toISOString(),
     };
 
-    // Check if already finished a workout today — merge
     const existingIndex = allWorkouts.findIndex(w => w.date === getTodayString());
     if (existingIndex >= 0) {
         allWorkouts[existingIndex].exercises.push(...todayExercises);
@@ -128,12 +244,12 @@ function finishWorkout() {
     }
 
     saveWorkouts();
-
     todayExercises = [];
     saveTodayExercises();
     updateTodayView();
     updateHistoryView();
     updateCalendarView();
+    renderWeekTracker();
 
     showToast('Workout saved! Great job! 🎉', 'success');
 }
@@ -146,7 +262,6 @@ function deleteExercise(id) {
 
 function updateTodayView() {
     const list = document.getElementById('exercise-list');
-    const emptyState = document.getElementById('empty-today');
     const countBadge = document.getElementById('exercise-count');
     const finishBtn = document.getElementById('finish-workout-btn');
 
@@ -184,7 +299,6 @@ function updateHistoryView() {
     const monthEl = document.getElementById('stat-this-month');
     const streakEl = document.getElementById('stat-streak');
 
-    // Stats
     totalEl.textContent = allWorkouts.length;
 
     const now = new Date();
@@ -207,7 +321,7 @@ function updateHistoryView() {
                 <span class="history-date">${formatDate(workout.date)}</span>
                 <div style="display:flex; align-items:center; gap:8px;">
                     <span class="history-count">${workout.exercises.length} exercise${workout.exercises.length !== 1 ? 's' : ''}</span>
-                    <button class="history-delete" onclick="deleteWorkout(${workout.id})" title="Delete workout">🗑️</button>
+                    <button class="history-delete" onclick="deleteWorkout(${workout.id})" title="Delete">🗑️</button>
                 </div>
             </div>
             <div class="history-exercises">
@@ -227,6 +341,7 @@ function deleteWorkout(id) {
     saveWorkouts();
     updateHistoryView();
     updateCalendarView();
+    renderWeekTracker();
     showToast('Workout deleted', 'success');
 }
 
@@ -276,8 +391,6 @@ function updateCalendarView() {
     document.getElementById('calendar-month').textContent = `${monthNames[month]} ${year}`;
 
     const grid = document.getElementById('calendar-grid');
-
-    // Keep headers
     const headers = grid.querySelectorAll('.cal-header');
     grid.innerHTML = '';
     headers.forEach(h => grid.appendChild(h));
@@ -290,16 +403,13 @@ function updateCalendarView() {
     const todayStr = today.toISOString().split('T')[0];
     const workoutDates = getWorkoutDates();
 
-    // Previous month days
     for (let i = firstDay - 1; i >= 0; i--) {
-        const day = daysInPrevMonth - i;
         const el = document.createElement('div');
         el.className = 'cal-day other-month';
-        el.textContent = day;
+        el.textContent = daysInPrevMonth - i;
         grid.appendChild(el);
     }
 
-    // Current month days
     for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const el = document.createElement('div');
@@ -312,7 +422,6 @@ function updateCalendarView() {
         grid.appendChild(el);
     }
 
-    // Fill remaining cells
     const totalCells = firstDay + daysInMonth;
     const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
     for (let i = 1; i <= remaining; i++) {
@@ -330,14 +439,13 @@ function setupTimer() {
     const pauseBtn = document.getElementById('timer-pause');
     const resetBtn = document.getElementById('timer-reset');
 
-    // Add SVG gradient for the ring
     const svg = document.querySelector('.timer-ring');
     const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
     const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
     gradient.id = 'timer-gradient';
     gradient.innerHTML = `
-        <stop offset="0%" stop-color="#8b5cf6"/>
-        <stop offset="100%" stop-color="#ec4899"/>
+        <stop offset="0%" stop-color="#50C878"/>
+        <stop offset="100%" stop-color="#6ed492"/>
     `;
     defs.appendChild(gradient);
     svg.prepend(defs);
@@ -395,7 +503,6 @@ function startTimer() {
             document.getElementById('timer-start').textContent = 'Restart';
             document.getElementById('timer-pause').style.display = 'none';
 
-            // Play beep
             playTimerBeep();
             showToast('Rest timer complete! Get back to it! 💪', 'success');
             return;
@@ -408,14 +515,15 @@ function startTimer() {
 function pauseTimer() {
     clearInterval(timerInterval);
     timerRunning = false;
-    document.getElementById('timer-pause').textContent = 'Resume';
-    document.getElementById('timer-pause').addEventListener('click', () => {
+    const pauseBtn = document.getElementById('timer-pause');
+    pauseBtn.textContent = 'Resume';
+    pauseBtn.onclick = () => {
         if (!timerRunning && timerRemaining > 0) {
-            document.getElementById('timer-pause').textContent = 'Pause';
+            pauseBtn.textContent = 'Pause';
+            pauseBtn.onclick = pauseTimer;
             startTimer();
         }
-    }, { once: true });
-
+    };
     document.getElementById('timer-label').textContent = 'Paused';
 }
 
@@ -428,6 +536,8 @@ function resetTimer() {
     document.getElementById('timer-start').style.display = 'inline-flex';
     document.getElementById('timer-start').textContent = 'Start';
     document.getElementById('timer-pause').style.display = 'none';
+    document.getElementById('timer-pause').textContent = 'Pause';
+    document.getElementById('timer-pause').onclick = pauseTimer;
     document.getElementById('timer-reset').style.display = 'none';
     document.getElementById('timer-label').textContent = 'Ready';
     document.getElementById('timer-display').classList.remove('pulsing');
@@ -438,8 +548,7 @@ function updateTimerDisplay() {
     const seconds = timerRemaining % 60;
     document.getElementById('timer-value').textContent = `${minutes}:${String(seconds).padStart(2, '0')}`;
 
-    // Update ring progress
-    const circumference = 2 * Math.PI * 90; // r=90
+    const circumference = 2 * Math.PI * 90;
     const progress = timerTotal > 0 ? (timerTotal - timerRemaining) / timerTotal : 0;
     const offset = circumference * (1 - progress);
     document.getElementById('timer-ring-progress').style.strokeDashoffset = offset;
@@ -448,41 +557,26 @@ function updateTimerDisplay() {
 function playTimerBeep() {
     try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-        // Play 3 beeps
         [0, 0.2, 0.4].forEach(delay => {
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            oscillator.frequency.value = 800;
-            oscillator.type = 'sine';
-            gainNode.gain.value = 0.3;
-            oscillator.start(audioCtx.currentTime + delay);
-            oscillator.stop(audioCtx.currentTime + delay + 0.15);
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = 800;
+            osc.type = 'sine';
+            gain.gain.value = 0.3;
+            osc.start(audioCtx.currentTime + delay);
+            osc.stop(audioCtx.currentTime + delay + 0.15);
         });
-    } catch (e) {
-        // Fallback: do nothing
-    }
+    } catch (e) { }
 }
 
 // ===== EXERCISE SUGGESTIONS =====
 function populateExerciseSuggestions() {
     const datalist = document.getElementById('exercise-suggestions');
-    const commonExercises = [
-        'Bench Press', 'Squat', 'Deadlift', 'Overhead Press',
-        'Barbell Row', 'Pull-ups', 'Push-ups', 'Dumbbell Curl',
-        'Tricep Extension', 'Leg Press', 'Leg Curl', 'Leg Extension',
-        'Lat Pulldown', 'Cable Row', 'Chest Fly', 'Lateral Raise',
-        'Front Raise', 'Face Pull', 'Plank', 'Crunches',
-        'Romanian Deadlift', 'Hip Thrust', 'Calf Raise', 'Lunges',
-        'Bulgarian Split Squat', 'Incline Bench Press', 'Dips',
-    ];
-
-    // Add from history too
-    const historyExercises = allWorkouts.flatMap(w => w.exercises.map(e => e.name));
-    const allNames = [...new Set([...commonExercises, ...historyExercises])].sort();
-
+    const presetNames = WORKOUT_PRESETS.map(p => p.name);
+    const historyNames = allWorkouts.flatMap(w => w.exercises.map(e => e.name));
+    const allNames = [...new Set([...presetNames, ...historyNames])].sort();
     datalist.innerHTML = allNames.map(name => `<option value="${name}">`).join('');
 }
 
@@ -495,8 +589,7 @@ function escapeHtml(text) {
 
 function formatDate(dateStr) {
     const date = new Date(dateStr + 'T00:00:00');
-    const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
-    return date.toLocaleDateString('en-US', options);
+    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function createEmptyState(icon, message) {
@@ -512,8 +605,5 @@ function showToast(message, type = 'success') {
     toast.className = `toast ${type}`;
     toast.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span> ${message}`;
     container.appendChild(toast);
-
-    setTimeout(() => {
-        if (toast.parentNode) toast.remove();
-    }, 3000);
+    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3000);
 }
