@@ -112,12 +112,12 @@ body::before {
 
 /* ===== 7-Day Week Tracker ===== */
 .week-tracker {
-    padding: var(--space-xl) 0 var(--space-md);
+    padding: var(--space-lg) 0 var(--space-md);
     text-align: center;
 }
 
 .week-tracker-title {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -146,13 +146,13 @@ body::before {
 }
 
 .week-day-circle {
-    width: 38px;
-    height: 38px;
+    width: 40px;
+    height: 40px;
     border-radius: var(--radius-full);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: var(--text-muted);
     background: rgba(255, 255, 255, 0.03);
@@ -306,8 +306,7 @@ body::before {
 
 /* ===== Main Content ===== */
 .main-content {
-    padding: var(--space-md) var(--space-md);
-    padding-bottom: 100px;
+    padding: var(--space-sm) var(--space-md) 100px;
     max-width: 500px;
     margin: 0 auto;
 }
@@ -334,12 +333,12 @@ body::before {
 }
 
 .view-header {
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--space-md);
     text-align: center;
 }
 
 .view-header h1 {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     font-weight: 900;
     color: var(--text-primary);
     letter-spacing: -0.03em;
@@ -347,21 +346,21 @@ body::before {
 
 .subtitle {
     color: var(--text-secondary);
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     margin-top: var(--space-xs);
 }
 
 /* ===== Workout Selector ===== */
 .workout-selector {
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--space-md);
 }
 
 .selector-title {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
     margin-bottom: var(--space-sm);
 }
 
@@ -502,7 +501,7 @@ body::before {
 /* ===== Forms ===== */
 .workout-form {
     padding: var(--space-lg);
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--space-md);
 }
 
 .form-group {
@@ -511,12 +510,12 @@ body::before {
 
 .form-group label {
     display: block;
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 700;
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: var(--space-sm);
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
 }
 
 .form-group input,
@@ -525,10 +524,10 @@ body::before {
     background: var(--bg-input);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
-    padding: 11px var(--space-md);
+    padding: 10px var(--space-md);
     color: var(--text-primary);
     font-family: 'Inter', sans-serif;
-    font-size: 0.92rem;
+    font-size: 0.88rem;
     transition: all var(--transition-base);
     outline: none;
 }
@@ -659,7 +658,8 @@ body::before {
     background: var(--bg-card);
     border-radius: var(--radius-xl);
     border: 1px solid var(--border-color);
-    padding: var(--space-lg);
+    padding: var(--space-md) var(--space-lg);
+    margin-top: var(--space-sm);
 }
 
 .section-header {
@@ -670,16 +670,16 @@ body::before {
 }
 
 .section-header h2 {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 700;
 }
 
 .badge {
     background: var(--primary-glow);
     color: var(--primary);
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     font-weight: 700;
-    padding: 4px 12px;
+    padding: 3px 10px;
     border-radius: var(--radius-full);
 }
 
@@ -719,15 +719,15 @@ body::before {
 
 .exercise-name {
     font-weight: 700;
-    font-size: 0.92rem;
+    font-size: 0.88rem;
     margin-bottom: 2px;
 }
 
 .exercise-details {
     color: var(--text-secondary);
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     display: flex;
-    gap: var(--space-md);
+    gap: var(--space-sm);
 }
 
 .exercise-detail-item {
@@ -1039,11 +1039,11 @@ body::before {
 }
 
 .timer-presets h3 {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
     margin-bottom: var(--space-sm);
     margin-top: var(--space-md);
 }
@@ -1142,6 +1142,54 @@ body::before {
     }
 }
 
+/* ===== Small Screens ===== */
+@media (max-width: 380px) {
+    .main-content {
+        padding-left: var(--space-sm);
+        padding-right: var(--space-sm);
+    }
+
+    .week-day-circle {
+        width: 34px;
+        height: 34px;
+        font-size: 0.72rem;
+    }
+
+    .filter-tab {
+        min-width: 44px;
+        padding: 6px 6px 8px;
+    }
+
+    .filter-tab-icon {
+        font-size: 1rem;
+    }
+
+    .filter-tab-label {
+        font-size: 0.56rem;
+    }
+
+    .workout-chip {
+        padding: 5px 10px;
+        font-size: 0.72rem;
+    }
+
+    .nav-btn {
+        padding: 8px 12px;
+    }
+
+    .nav-icon {
+        font-size: 1.05rem;
+    }
+
+    .nav-label {
+        font-size: 0.52rem;
+    }
+
+    .form-row {
+        gap: var(--space-sm);
+    }
+}
+
 /* ===== Desktop ===== */
 @media (min-width: 768px) {
     .navbar {
@@ -1166,13 +1214,19 @@ body::before {
     }
 
     .view-header h1 {
-        font-size: 2rem;
+        font-size: 1.8rem;
+    }
+
+    .week-day-circle {
+        width: 44px;
+        height: 44px;
+        font-size: 0.85rem;
     }
 }
 
 /* ===== Scrollbar ===== */
 ::-webkit-scrollbar {
-    width: 5px;
+    width: 4px;
 }
 
 ::-webkit-scrollbar-track {
