@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="FitPulse — Track your workouts, log exercises, and monitor your fitness progress.">
+        content="FitPulse — Track your workouts, log exercises, and monitor your fitness progress with rest timers and calendar view.">
     <title>FitPulse — Personal Workout Assistant</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,23 +16,12 @@
 </head>
 
 <body>
-    <!-- Top Bar -->
-    <header class="top-bar" id="top-bar">
-        <div class="top-bar-left">
-            <img src="favicon.png" alt="FitPulse" class="top-bar-logo">
-            <span class="top-bar-title">FitPulse</span>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-brand">
+            <img src="favicon.png" alt="FitPulse" class="brand-icon-img">
+            <span class="brand-text">FitPulse</span>
         </div>
-        <button class="account-btn" id="account-btn" title="Account">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-        </button>
-    </header>
-
-    <!-- Navigation — iOS Liquid Glass Style -->
-    <nav class="navbar glass-nav" id="navbar">
         <div class="nav-links">
             <button class="nav-btn active" data-view="workout" id="nav-workout">
                 <span class="nav-icon">💪</span>
@@ -59,31 +48,35 @@
         <!-- ===== WORKOUT VIEW ===== -->
         <section class="view active" id="view-workout">
 
-            <!-- Header Image Overlay -->
-            <div class="hero-header">
-                <img src="header-bg.png" alt="Workout" class="hero-img">
-                <div class="hero-overlay"></div>
-                <div class="hero-content">
-                    <h1 class="hero-title">Let's Train</h1>
-                    <p class="hero-sub">Push your limits today</p>
+            <!-- 7-Day Tracker -->
+            <div class="week-tracker" id="week-tracker">
+                <h2 class="week-tracker-title">This Week</h2>
+                <div class="week-days" id="week-days">
+                    <!-- Filled by JS -->
                 </div>
             </div>
 
-            <!-- 7-Day Tracker -->
-            <div class="week-tracker" id="week-tracker">
-                <h2 class="section-title">This Week</h2>
-                <div class="week-days" id="week-days"></div>
+            <div class="view-header">
+                <h1>Log Workout</h1>
+                <p class="subtitle">Pick an exercise or type your own</p>
             </div>
 
-            <!-- Workout Log Form -->
-            <div class="section-title">Log Exercise</div>
+            <!-- Workout Selector -->
+            <div class="workout-selector" id="workout-selector">
+                <h3 class="selector-title">Quick Select</h3>
+                <div class="workout-chips" id="workout-chips">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+
             <form class="workout-form card" id="workout-form">
                 <div class="form-group">
                     <label for="exercise-name">Exercise Name</label>
-                    <input type="text" id="exercise-name" placeholder="e.g. Bench Press" required autocomplete="off"
-                        list="exercise-suggestions">
+                    <input type="text" id="exercise-name" placeholder="e.g. Bench Press, Squat, Deadlift..." required
+                        autocomplete="off" list="exercise-suggestions">
                     <datalist id="exercise-suggestions"></datalist>
                 </div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label for="exercise-weight">Weight (kg)</label>
@@ -98,21 +91,17 @@
                         <input type="number" id="exercise-sets" placeholder="0" min="1" required>
                     </div>
                 </div>
+
                 <div class="form-group">
                     <label for="exercise-notes">Notes (optional)</label>
-                    <textarea id="exercise-notes" placeholder="How did it feel?" rows="2"></textarea>
+                    <textarea id="exercise-notes" placeholder="How did it feel? Any PRs?" rows="2"></textarea>
                 </div>
+
                 <button type="submit" class="btn btn-primary" id="log-exercise-btn">
                     <span>Log Exercise</span>
                     <span class="btn-icon">✓</span>
                 </button>
             </form>
-
-            <!-- Quick Select — 3-row scrollable -->
-            <div class="section-title">Quick Select</div>
-            <div class="workout-selector" id="workout-selector">
-                <div class="workout-chips-scroll" id="workout-chips"></div>
-            </div>
 
             <!-- Today's Exercises -->
             <div class="todays-session" id="todays-session">
@@ -121,9 +110,9 @@
                     <span class="badge" id="exercise-count">0 exercises</span>
                 </div>
                 <div class="exercise-list" id="exercise-list">
-                    <div class="empty-state">
+                    <div class="empty-state" id="empty-today">
                         <span class="empty-icon">🏃</span>
-                        <p>No exercises logged today.</p>
+                        <p>No exercises logged today. Start your workout!</p>
                     </div>
                 </div>
                 <button class="btn btn-secondary" id="finish-workout-btn" style="display:none;">
@@ -135,24 +124,19 @@
 
         <!-- ===== HISTORY VIEW ===== -->
         <section class="view" id="view-history">
-            <div class="hero-header hero-header-small">
-                <img src="header-bg.png" alt="History" class="hero-img">
-                <div class="hero-overlay"></div>
-                <div class="hero-content">
-                    <h1 class="hero-title">History</h1>
-                    <p class="hero-sub">Your fitness journey</p>
-                </div>
-            </div>
-
             <div class="week-tracker" id="week-tracker-history">
-                <h2 class="section-title">This Week</h2>
+                <h2 class="week-tracker-title">This Week</h2>
                 <div class="week-days" id="week-days-history"></div>
+            </div>
+            <div class="view-header">
+                <h1>Workout History</h1>
+                <p class="subtitle">Review your past workouts and progress</p>
             </div>
 
             <div class="stats-row" id="stats-row">
                 <div class="stat-card card">
                     <span class="stat-value" id="stat-total-workouts">0</span>
-                    <span class="stat-label">Total</span>
+                    <span class="stat-label">Total Workouts</span>
                 </div>
                 <div class="stat-card card">
                     <span class="stat-value" id="stat-this-month">0</span>
@@ -160,27 +144,23 @@
                 </div>
                 <div class="stat-card card">
                     <span class="stat-value" id="stat-streak">0</span>
-                    <span class="stat-label">Streak 🔥</span>
+                    <span class="stat-label">Day Streak 🔥</span>
                 </div>
             </div>
 
             <div class="history-list" id="history-list">
-                <div class="empty-state">
+                <div class="empty-state" id="empty-history">
                     <span class="empty-icon">📭</span>
-                    <p>No workout history yet.</p>
+                    <p>No workout history yet. Complete your first workout!</p>
                 </div>
             </div>
         </section>
 
         <!-- ===== CALENDAR VIEW ===== -->
         <section class="view" id="view-calendar">
-            <div class="hero-header hero-header-small">
-                <img src="header-bg.png" alt="Calendar" class="hero-img">
-                <div class="hero-overlay"></div>
-                <div class="hero-content">
-                    <h1 class="hero-title">Calendar</h1>
-                    <p class="hero-sub">Track your consistency</p>
-                </div>
+            <div class="view-header" style="padding-top: 24px;">
+                <h1>Workout Calendar</h1>
+                <p class="subtitle">See your workout days at a glance</p>
             </div>
 
             <div class="calendar-container card" id="calendar-container">
@@ -199,7 +179,7 @@
                     <div class="cal-header">Sat</div>
                 </div>
                 <div class="calendar-legend">
-                    <span class="legend-item"><span class="legend-dot active"></span> Workout</span>
+                    <span class="legend-item"><span class="legend-dot active"></span> Workout day</span>
                     <span class="legend-item"><span class="legend-dot today"></span> Today</span>
                 </div>
             </div>
@@ -207,13 +187,9 @@
 
         <!-- ===== TIMER VIEW ===== -->
         <section class="view" id="view-timer">
-            <div class="hero-header hero-header-small">
-                <img src="header-bg.png" alt="Timer" class="hero-img">
-                <div class="hero-overlay"></div>
-                <div class="hero-content">
-                    <h1 class="hero-title">Rest Timer</h1>
-                    <p class="hero-sub">Recover and repeat</p>
-                </div>
+            <div class="view-header" style="padding-top: 24px;">
+                <h1>Rest Timer</h1>
+                <p class="subtitle">Time your rest between sets and workouts</p>
             </div>
 
             <div class="timer-container card" id="timer-container">
@@ -227,21 +203,23 @@
                         <span class="timer-label" id="timer-label">Ready</span>
                     </div>
                 </div>
+
                 <div class="timer-presets">
                     <h3>Between Sets</h3>
                     <div class="preset-row">
-                        <button class="btn btn-preset" data-time="60">1 min</button>
-                        <button class="btn btn-preset" data-time="90">1:30</button>
-                        <button class="btn btn-preset" data-time="120">2 min</button>
-                        <button class="btn btn-preset" data-time="180">3 min</button>
+                        <button class="btn btn-preset" data-time="60" id="timer-1min">1 min</button>
+                        <button class="btn btn-preset" data-time="90" id="timer-90sec">1:30</button>
+                        <button class="btn btn-preset" data-time="120" id="timer-2min">2 min</button>
+                        <button class="btn btn-preset" data-time="180" id="timer-3min">3 min</button>
                     </div>
                     <h3>Between Workouts</h3>
                     <div class="preset-row">
-                        <button class="btn btn-preset" data-time="300">5 min</button>
-                        <button class="btn btn-preset" data-time="420">7 min</button>
-                        <button class="btn btn-preset" data-time="600">10 min</button>
+                        <button class="btn btn-preset" data-time="300" id="timer-5min">5 min</button>
+                        <button class="btn btn-preset" data-time="420" id="timer-7min">7 min</button>
+                        <button class="btn btn-preset" data-time="600" id="timer-10min">10 min</button>
                     </div>
                 </div>
+
                 <div class="timer-controls">
                     <button class="btn btn-primary" id="timer-start" disabled>Start</button>
                     <button class="btn btn-secondary" id="timer-pause" style="display:none;">Pause</button>
@@ -251,30 +229,7 @@
         </section>
     </main>
 
-    <!-- Login Modal -->
-    <div class="modal-overlay" id="login-modal">
-        <div class="modal card">
-            <div class="modal-header">
-                <h2>Account</h2>
-                <button class="modal-close" id="modal-close">✕</button>
-            </div>
-            <div class="modal-body">
-                <p class="modal-info">Sign in to sync your workouts across devices (coming soon).</p>
-                <div class="form-group">
-                    <label for="login-email">Email</label>
-                    <input type="email" id="login-email" placeholder="your@email.com">
-                </div>
-                <div class="form-group">
-                    <label for="login-password">Password</label>
-                    <input type="password" id="login-password" placeholder="••••••••">
-                </div>
-                <button class="btn btn-primary" id="login-submit">Sign In</button>
-                <p class="modal-footer-text">Don't have an account? <a href="#" id="signup-link">Sign up</a></p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast -->
+    <!-- Toast Notification -->
     <div class="toast-container" id="toast-container"></div>
 
     <script src="app.js"></script>
