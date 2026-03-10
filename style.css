@@ -110,15 +110,16 @@ body::before {
     transition: border-color var(--transition-base);
 }
 
-/* ===== Account Bar ===== */
+/* ===== Account Bar (Unified Header) ===== */
 .account-bar {
     position: sticky;
     top: 0;
     z-index: 50;
-    padding: 10px var(--space-md);
-    background: rgba(13, 15, 14, 0.7);
+    background: rgba(13, 15, 14, 0.85);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
+    width: 100%;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .account-bar-inner {
@@ -127,6 +128,7 @@ body::before {
     justify-content: space-between;
     max-width: 500px;
     margin: 0 auto;
+    padding: 12px var(--space-lg);
 }
 
 .app-title {
@@ -282,18 +284,12 @@ body::before {
     font-weight: 600;
 }
 
-/* ===== 7-Day Week Tracker ===== */
+/* ===== 7-Day Week Tracker (Inside Header) ===== */
 .week-tracker {
-    padding: var(--space-lg) var(--space-lg) var(--space-md);
+    padding: 0 var(--space-lg) var(--space-md);
     text-align: center;
-    position: sticky;
-    top: 56px;
-    z-index: 40;
-    background: rgba(13, 15, 14, 0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    margin-left: calc(-1 * var(--space-lg));
-    margin-right: calc(-1 * var(--space-lg));
+    max-width: 500px;
+    margin: 0 auto;
 }
 
 .week-tracker-title {

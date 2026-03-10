@@ -24,6 +24,14 @@
                 <span class="account-avatar" id="account-avatar">👤</span>
             </button>
         </div>
+        
+        <!-- 7-Day Tracker (Unified) -->
+        <div class="week-tracker" id="week-tracker">
+            <h2 class="week-tracker-title">This Week</h2>
+            <div class="week-days" id="week-days">
+                <!-- Filled by JS -->
+            </div>
+        </div>
     </header>
 
     <!-- Account Modal -->
@@ -90,15 +98,7 @@
         <!-- ===== WORKOUT VIEW ===== -->
         <section class="view active" id="view-workout">
 
-            <!-- 7-Day Tracker -->
-            <div class="week-tracker" id="week-tracker">
-                <h2 class="week-tracker-title">This Week</h2>
-                <div class="week-days" id="week-days">
-                    <!-- Filled by JS -->
-                </div>
-            </div>
-
-            <!-- Workout Log Form (under the calendar) -->
+            <!-- Workout Log Form -->
             <div class="view-header">
                 <h1>Log Workout</h1>
                 <p class="subtitle">Pick an exercise or type your own</p>
@@ -201,10 +201,6 @@
 
         <!-- ===== HISTORY VIEW ===== -->
         <section class="view" id="view-history">
-            <div class="week-tracker" id="week-tracker-history">
-                <h2 class="week-tracker-title">This Week</h2>
-                <div class="week-days" id="week-days-history"></div>
-            </div>
             <div class="view-header">
                 <h1>Workout History</h1>
                 <p class="subtitle">Review your past workouts and progress</p>

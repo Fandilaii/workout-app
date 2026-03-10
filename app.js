@@ -220,46 +220,41 @@ function isFavorite(name) {
     return favoriteNames.includes(name);
 }
 
-// ===== 7-DAY WEEK TRACKER =====
+// ===== 7-Day WEEK TRACKER =====
 function renderWeekTracker() {
-    const containers = [
-        document.getElementById('week-days'),
-        document.getElementById('week-days-history'),
-    ];
+    const container = document.getElementById('week-days');
+    if (!container) return;
 
     const today = new Date();
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const workoutDates = getWorkoutDates();
 
-    containers.forEach(container => {
-        if (!container) return;
-        container.innerHTML = '';
+    container.innerHTML = '';
 
-        for (let i = 6; i >= 0; i--) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            const dateStr = date.toISOString().split('T')[0];
-            const isToday = i === 0;
-            const hasWorkout = workoutDates.includes(dateStr);
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        const isToday = i === 0;
+        const hasWorkout = workoutDates.includes(dateStr);
 
-            const dayEl = document.createElement('div');
-            dayEl.className = 'week-day';
+        const dayEl = document.createElement('div');
+        dayEl.className = 'week-day';
 
-            const label = document.createElement('span');
-            label.className = 'week-day-label';
-            label.textContent = dayNames[date.getDay()];
+        const label = document.createElement('span');
+        label.className = 'week-day-label';
+        label.textContent = dayNames[date.getDay()];
 
-            const circle = document.createElement('div');
-            circle.className = 'week-day-circle';
-            if (isToday) circle.classList.add('today');
-            if (hasWorkout) circle.classList.add('has-workout');
-            circle.textContent = date.getDate();
+        const circle = document.createElement('div');
+        circle.className = 'week-day-circle';
+        if (isToday) circle.classList.add('today');
+        if (hasWorkout) circle.classList.add('has-workout');
+        circle.textContent = date.getDate();
 
-            dayEl.appendChild(label);
-            dayEl.appendChild(circle);
-            container.appendChild(dayEl);
-        }
-    });
+        dayEl.appendChild(label);
+        dayEl.appendChild(circle);
+        container.appendChild(dayEl);
+    }
 }
 
 // ===== FILTER TABS =====
