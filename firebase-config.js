@@ -1,5 +1,5 @@
 /* =============================================
-   FitPulse — Firebase Configuration
+   FitPulse — Firebase Configuration & Database
    ============================================= */
 
 // Firebase config
@@ -21,7 +21,10 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-// ===== AUTH FUNCTIONS =====
+// =============================================
+//   AUTH FUNCTIONS
+// =============================================
+
 async function signInWithGoogle() {
     try {
         const result = await auth.signInWithPopup(googleProvider);
@@ -51,81 +54,277 @@ function getCurrentUser() {
     return auth.currentUser;
 }
 
-// ===== FIRESTORE FUNCTIONS =====
-
-// Save a completed workout to Firestore
-async function saveWorkoutToCloud(workout) {
+// Helper to get user doc ref
+function userRef() {
     const user = getCurrentUser();
-    if (!user) return false;
+    return user ? db.collection('users').doc(user.uid) : null;
+}
+
+// =============================================
+//   USER PROFILE
+// =============================================
+
+async function saveUserProfile(user) {
+    const ref = userRef();
+    if (!ref) return;
 
     try {
-        await db.collection('users').doc(user.uid)
-            .collection('workouts').doc(String(workout.id))
-            .set(workout);
+        await ref.set({
+            name: user.displayName || '',
+            email: user.email || '',
+            photoURL: user.photoURL || '',
+            lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+            settings: {
+                weightUnit: 'kg',
+            }
+        }, { merge: true });
+    } catch (error) {
+        console.error('Save profile error:', error);
+    }
+}
+
+async function getUserSettings() {
+    const ref = userRef();
+    if (!ref) return null;
+
+    try {
+        const doc = await ref.get();
+        return doc.exists ? (doc.data().settings || {}) : {};
+    } catch (error) {
+        console.error('Get settings error:', error);
+        return {};
+    }
+}
+
+async function updateUserSettings(settings) {
+    const ref = userRef();
+    if (!ref) return;
+
+    try {
+        await ref.set({ settings }, { merge: true });
+    } catch (error) {
+        console.error('Update settings error:', error);
+    }
+}
+
+// =============================================
+//   WORKOUT SESSIONS (History)
+// =============================================
+//   Structure:
+//   sessions/{sessionId}: {
+//     id, date, timestamp,
+//     exercises: [{ name, weight, reps, sets, notes }],
+//     exerciseCount, totalVolume, duration (ms)
+//   }
+
+async function saveSessionToCloud(session) {
+    const ref = userRef();
+    if (!ref) return false;
+
+    try {
+        await ref.collection('sessions').doc(String(session.id)).set(session);
         return true;
     } catch (error) {
-        console.error('Save workout error:', error);
+        console.error('Save session error:', error);
         return false;
     }
 }
 
-// Load all workouts from Firestore
-async function loadWorkoutsFromCloud() {
-    const user = getCurrentUser();
-    if (!user) return null;
+async function loadSessionsFromCloud() {
+    const ref = userRef();
+    if (!ref) return null;
 
     try {
-        const snapshot = await db.collection('users').doc(user.uid)
-            .collection('workouts')
+        const snapshot = await ref.collection('sessions')
             .orderBy('date', 'desc')
             .get();
-
         return snapshot.docs.map(doc => doc.data());
     } catch (error) {
-        console.error('Load workouts error:', error);
+        console.error('Load sessions error:', error);
         return null;
     }
 }
 
-// Delete a workout from Firestore
-async function deleteWorkoutFromCloud(workoutId) {
-    const user = getCurrentUser();
-    if (!user) return false;
+async function deleteSessionFromCloud(sessionId) {
+    const ref = userRef();
+    if (!ref) return false;
 
     try {
-        await db.collection('users').doc(user.uid)
-            .collection('workouts').doc(String(workoutId))
-            .delete();
+        await ref.collection('sessions').doc(String(sessionId)).delete();
         return true;
     } catch (error) {
-        console.error('Delete workout error:', error);
+        console.error('Delete session error:', error);
         return false;
     }
 }
 
-// Sync localStorage workouts to Firestore (first-time migration)
+// =============================================
+//   FAVORITES
+// =============================================
+//   Structure:
+//   favorites/{exerciseName}: {
+//     name, icon, group, addedAt
+//   }
+
+async function addFavoriteToCloud(exercise) {
+    const ref = userRef();
+    if (!ref) return false;
+
+    try {
+        await ref.collection('favorites').doc(exercise.name).set({
+            name: exercise.name,
+            icon: exercise.icon,
+            group: exercise.group,
+            addedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        return true;
+    } catch (error) {
+        console.error('Add favorite error:', error);
+        return false;
+    }
+}
+
+async function removeFavoriteFromCloud(exerciseName) {
+    const ref = userRef();
+    if (!ref) return false;
+
+    try {
+        await ref.collection('favorites').doc(exerciseName).delete();
+        return true;
+    } catch (error) {
+        console.error('Remove favorite error:', error);
+        return false;
+    }
+}
+
+async function loadFavoritesFromCloud() {
+    const ref = userRef();
+    if (!ref) return null;
+
+    try {
+        const snapshot = await ref.collection('favorites').get();
+        return snapshot.docs.map(doc => doc.data().name);
+    } catch (error) {
+        console.error('Load favorites error:', error);
+        return null;
+    }
+}
+
+// =============================================
+//   PERSONAL RECORDS
+// =============================================
+//   Structure:
+//   records/{exerciseName}: {
+//     name,
+//     bestWeight, bestWeightDate,
+//     bestVolume, bestVolumeDate,
+//     lastPerformed, totalSessions
+//   }
+
+async function updatePersonalRecord(exercise) {
+    const ref = userRef();
+    if (!ref) return;
+
+    const docRef = ref.collection('records').doc(exercise.name);
+
+    try {
+        const doc = await docRef.get();
+        const volume = exercise.weight * exercise.reps * exercise.sets;
+        const today = new Date().toISOString().split('T')[0];
+
+        if (doc.exists) {
+            const data = doc.data();
+            const updates = {
+                lastPerformed: today,
+                totalSessions: (data.totalSessions || 0) + 1
+            };
+
+            if (exercise.weight > (data.bestWeight || 0)) {
+                updates.bestWeight = exercise.weight;
+                updates.bestWeightDate = today;
+            }
+            if (volume > (data.bestVolume || 0)) {
+                updates.bestVolume = volume;
+                updates.bestVolumeDate = today;
+            }
+
+            await docRef.update(updates);
+        } else {
+            await docRef.set({
+                name: exercise.name,
+                bestWeight: exercise.weight,
+                bestWeightDate: today,
+                bestVolume: volume,
+                bestVolumeDate: today,
+                lastPerformed: today,
+                totalSessions: 1
+            });
+        }
+    } catch (error) {
+        console.error('Update PR error:', error);
+    }
+}
+
+async function loadPersonalRecords() {
+    const ref = userRef();
+    if (!ref) return null;
+
+    try {
+        const snapshot = await ref.collection('records').get();
+        const records = {};
+        snapshot.docs.forEach(doc => {
+            records[doc.id] = doc.data();
+        });
+        return records;
+    } catch (error) {
+        console.error('Load PRs error:', error);
+        return null;
+    }
+}
+
+// =============================================
+//   MIGRATION (localStorage -> Firestore)
+// =============================================
+
 async function syncLocalToCloud() {
     const user = getCurrentUser();
     if (!user) return;
 
+    // Save profile
+    await saveUserProfile(user);
+
+    // Migrate workout sessions
     const localWorkouts = JSON.parse(localStorage.getItem('fitpulse_workouts')) || [];
     if (localWorkouts.length === 0) return;
 
-    const cloudWorkouts = await loadWorkoutsFromCloud();
-    if (cloudWorkouts && cloudWorkouts.length > 0) return; // Already has cloud data
+    const cloudSessions = await loadSessionsFromCloud();
+    if (cloudSessions && cloudSessions.length > 0) return; // already migrated
 
-    // Migrate local data to cloud
     const batch = db.batch();
     localWorkouts.forEach(workout => {
-        const ref = db.collection('users').doc(user.uid)
-            .collection('workouts').doc(String(workout.id));
-        batch.set(ref, workout);
+        // Add computed fields if missing
+        if (!workout.exerciseCount) {
+            workout.exerciseCount = workout.exercises ? workout.exercises.length : 0;
+        }
+        if (!workout.totalVolume) {
+            workout.totalVolume = (workout.exercises || []).reduce((sum, ex) => {
+                return sum + (ex.weight * ex.reps * ex.sets);
+            }, 0);
+        }
+
+        const docRef = userRef().collection('sessions').doc(String(workout.id));
+        batch.set(docRef, workout);
     });
 
     try {
         await batch.commit();
-        console.log(`Migrated ${localWorkouts.length} workouts to cloud`);
+        console.log(`Migrated ${localWorkouts.length} sessions to cloud`);
     } catch (error) {
         console.error('Migration error:', error);
     }
 }
+
+// Backwards-compat aliases
+const saveWorkoutToCloud = saveSessionToCloud;
+const loadWorkoutsFromCloud = loadSessionsFromCloud;
+const deleteWorkoutFromCloud = deleteSessionFromCloud;

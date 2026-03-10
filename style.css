@@ -670,6 +670,25 @@ body::before {
     font-size: 0.85rem;
 }
 
+.chip-fav {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-left: 2px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.chip-fav:hover { color: #f59e0b; }
+.chip-fav.is-fav { color: #f59e0b; }
+
+.empty-chips {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    padding: var(--space-lg) 0;
+    text-align: center;
+    width: 100%;
+}
+
 /* ===== Forms ===== */
 .workout-form {
     padding: var(--space-lg);
@@ -1005,8 +1024,57 @@ body::before {
     color: var(--text-muted);
 }
 
+.history-muscles {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.muscle-tag {
+    font-size: 0.58rem;
+    font-weight: 700;
+    color: var(--primary);
+    background: var(--primary-glow);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    text-transform: capitalize;
+}
+
+/* Session stats row */
+.history-stats-row {
+    display: flex;
+    gap: var(--space-sm);
+    padding: 0 var(--space-lg);
+    margin-bottom: var(--space-sm);
+}
+
+.history-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--radius-sm);
+    padding: 6px var(--space-xs);
+}
+
+.history-stat-value {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.history-stat-label {
+    font-size: 0.55rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
 .history-exercises {
-    padding: 0 var(--space-lg) var(--space-md);
+    padding: var(--space-sm) var(--space-lg) var(--space-md);
     display: flex;
     flex-direction: column;
     gap: var(--space-xs);
@@ -1016,20 +1084,34 @@ body::before {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 9px var(--space-md);
+    padding: 8px var(--space-sm);
     background: rgba(255, 255, 255, 0.02);
     border-radius: var(--radius-sm);
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     border-left: 2px solid var(--green-600);
+}
+
+.history-exercise-left {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
 }
 
 .history-exercise-name {
     font-weight: 600;
+    font-size: 0.78rem;
+}
+
+.history-exercise-note {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    font-style: italic;
 }
 
 .history-exercise-stats {
     color: var(--text-secondary);
-    font-size: 0.78rem;
+    font-size: 0.72rem;
+    white-space: nowrap;
 }
 
 .history-delete {

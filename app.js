@@ -5,6 +5,7 @@
 // ===== STORAGE KEYS =====
 const STORAGE_KEY = 'fitpulse_workouts';
 const TODAY_KEY = 'fitpulse_today';
+const FAVORITES_KEY = 'fitpulse_favorites';
 
 // ===== WORKOUT PRESETS (with muscle groups) =====
 const WORKOUT_PRESETS = [
@@ -45,6 +46,8 @@ const WORKOUT_PRESETS = [
 // ===== STATE =====
 let todayExercises = [];
 let allWorkouts = [];
+let favoriteNames = [];
+let personalRecords = {};
 let calendarDate = new Date();
 let timerInterval = null;
 let timerRemaining = 0;
@@ -53,6 +56,7 @@ let timerRunning = false;
 let selectedPreset = null;
 let activeGroup = 'all';
 let isLoggedIn = false;
+let sessionStartTime = null;
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
@@ -70,25 +74,40 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCalendarView();
     populateExerciseSuggestions();
 
+    // Start session timer when first exercise is logged
+    if (todayExercises.length > 0 && !sessionStartTime) {
+        sessionStartTime = Date.now();
+    }
+
     // Firebase Auth listener
     auth.onAuthStateChanged(async (user) => {
         isLoggedIn = !!user;
         updateAccountUI(user);
 
         if (user) {
-            // Migrate local data to cloud on first login
             await syncLocalToCloud();
-            // Load from cloud
-            const cloudWorkouts = await loadWorkoutsFromCloud();
-            if (cloudWorkouts !== null) {
-                allWorkouts = cloudWorkouts;
-                saveWorkoutsLocal(); // cache locally too
+
+            const cloudSessions = await loadSessionsFromCloud();
+            if (cloudSessions !== null) {
+                allWorkouts = cloudSessions;
+                saveWorkoutsLocal();
+            }
+
+            const cloudFavs = await loadFavoritesFromCloud();
+            if (cloudFavs !== null) {
+                favoriteNames = cloudFavs;
+                localStorage.setItem(FAVORITES_KEY, JSON.stringify(favoriteNames));
+            }
+
+            const cloudRecords = await loadPersonalRecords();
+            if (cloudRecords !== null) {
+                personalRecords = cloudRecords;
             }
         } else {
-            loadData(); // fallback to localStorage
+            loadData();
         }
 
-        // Refresh all views
+        renderChips();
         renderWeekTracker();
         updateTodayView();
         updateHistoryView();
@@ -104,17 +123,9 @@ function setupAccountUI() {
     const googleBtn = document.getElementById('btn-google-signin');
     const signOutBtn = document.getElementById('btn-signout');
 
-    accountBtn.addEventListener('click', () => {
-        modal.style.display = 'flex';
-    });
-
-    closeBtn.addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
-
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.style.display = 'none';
-    });
+    accountBtn.addEventListener('click', () => modal.style.display = 'flex');
+    closeBtn.addEventListener('click', () => modal.style.display = 'none');
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
 
     googleBtn.addEventListener('click', async () => {
         await signInWithGoogle();
@@ -138,8 +149,6 @@ function updateAccountUI(user) {
         document.getElementById('user-name').textContent = user.displayName || 'User';
         document.getElementById('user-email').textContent = user.email || '';
         document.getElementById('user-photo').src = user.photoURL || '';
-
-        // Update avatar to user photo
         if (user.photoURL) {
             avatarEl.innerHTML = `<img src="${user.photoURL}" alt="${user.displayName}">`;
         }
@@ -155,9 +164,11 @@ function loadData() {
     try {
         allWorkouts = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         todayExercises = JSON.parse(localStorage.getItem(TODAY_KEY)) || [];
+        favoriteNames = JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
     } catch {
         allWorkouts = [];
         todayExercises = [];
+        favoriteNames = [];
     }
 }
 
@@ -167,14 +178,17 @@ function saveWorkoutsLocal() {
 
 function saveWorkouts() {
     saveWorkoutsLocal();
-    // Also save each workout to cloud if logged in
     if (isLoggedIn) {
-        allWorkouts.forEach(w => saveWorkoutToCloud(w));
+        allWorkouts.forEach(w => saveSessionToCloud(w));
     }
 }
 
 function saveTodayExercises() {
     localStorage.setItem(TODAY_KEY, JSON.stringify(todayExercises));
+}
+
+function saveFavoritesLocal() {
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(favoriteNames));
 }
 
 function getTodayString() {
@@ -185,6 +199,25 @@ function getWorkoutDates() {
     return allWorkouts.map(w => w.date);
 }
 
+// ===== FAVORITES =====
+function toggleFavorite(exerciseName, icon, group) {
+    const idx = favoriteNames.indexOf(exerciseName);
+    if (idx >= 0) {
+        favoriteNames.splice(idx, 1);
+        if (isLoggedIn) removeFavoriteFromCloud(exerciseName);
+        showToast(`Removed from favorites`, 'success');
+    } else {
+        favoriteNames.push(exerciseName);
+        if (isLoggedIn) addFavoriteToCloud({ name: exerciseName, icon, group });
+        showToast(`Added to favorites ⭐`, 'success');
+    }
+    saveFavoritesLocal();
+    renderChips();
+}
+
+function isFavorite(name) {
+    return favoriteNames.includes(name);
+}
 
 // ===== 7-DAY WEEK TRACKER =====
 function renderWeekTracker() {
@@ -250,17 +283,37 @@ function renderChips() {
     const chipsContainer = document.getElementById('workout-chips');
     chipsContainer.innerHTML = '';
 
-    const filtered = activeGroup === 'all'
-        ? WORKOUT_PRESETS
-        : WORKOUT_PRESETS.filter(p => p.group === activeGroup);
+    let filtered;
+    if (activeGroup === 'favorites') {
+        filtered = WORKOUT_PRESETS.filter(p => isFavorite(p.name));
+    } else if (activeGroup === 'all') {
+        filtered = WORKOUT_PRESETS;
+    } else {
+        filtered = WORKOUT_PRESETS.filter(p => p.group === activeGroup);
+    }
+
+    if (filtered.length === 0) {
+        chipsContainer.innerHTML = '<div class="empty-chips">No exercises found</div>';
+        return;
+    }
 
     filtered.forEach((preset) => {
         const index = WORKOUT_PRESETS.indexOf(preset);
+        const fav = isFavorite(preset.name);
         const chip = document.createElement('button');
         chip.type = 'button';
         chip.className = 'workout-chip';
         if (selectedPreset === index) chip.classList.add('active');
-        chip.innerHTML = `<span class="workout-chip-icon">${preset.icon}</span>${preset.name}`;
+
+        chip.innerHTML = `
+            <span class="workout-chip-icon">${preset.icon}</span>
+            <span>${preset.name}</span>
+            <span class="chip-fav ${fav ? 'is-fav' : ''}" 
+                  onclick="event.stopPropagation(); toggleFavorite('${preset.name}', '${preset.icon}', '${preset.group}')"
+                  title="${fav ? 'Remove from favorites' : 'Add to favorites'}">
+                ${fav ? '★' : '☆'}
+            </span>
+        `;
         chip.addEventListener('click', () => selectPreset(index, chip));
         chipsContainer.appendChild(chip);
     });
@@ -269,7 +322,6 @@ function renderChips() {
 function selectPreset(index, chipEl) {
     const preset = WORKOUT_PRESETS[index];
 
-    // Toggle active state
     document.querySelectorAll('.workout-chip').forEach(c => c.classList.remove('active'));
 
     if (selectedPreset === index) {
@@ -281,7 +333,6 @@ function selectPreset(index, chipEl) {
     selectedPreset = index;
     chipEl.classList.add('active');
 
-    // Fill form
     document.getElementById('exercise-name').value = preset.name;
     document.getElementById('exercise-weight').value = preset.defaultWeight || '';
     document.getElementById('exercise-reps').value = preset.defaultReps || '';
@@ -339,6 +390,11 @@ function setupWorkoutForm() {
             notes: document.getElementById('exercise-notes').value.trim(),
         };
 
+        // Track session start
+        if (todayExercises.length === 0) {
+            sessionStartTime = Date.now();
+        }
+
         todayExercises.push(exercise);
         saveTodayExercises();
         updateTodayView();
@@ -356,22 +412,51 @@ function finishWorkout() {
         return;
     }
 
+    // Calculate session metadata
+    const totalVolume = todayExercises.reduce((sum, ex) => {
+        return sum + (ex.weight * ex.reps * ex.sets);
+    }, 0);
+
+    const duration = sessionStartTime ? Date.now() - sessionStartTime : 0;
+
     const workout = {
         id: Date.now(),
         date: getTodayString(),
-        exercises: [...todayExercises],
         timestamp: new Date().toISOString(),
+        exercises: [...todayExercises],
+        exerciseCount: todayExercises.length,
+        totalVolume: Math.round(totalVolume),
+        duration: duration,
+        muscleGroups: [...new Set(todayExercises.map(ex => {
+            const preset = WORKOUT_PRESETS.find(p => p.name === ex.name);
+            return preset ? preset.group : 'other';
+        }))],
     };
 
     const existingIndex = allWorkouts.findIndex(w => w.date === getTodayString());
     if (existingIndex >= 0) {
-        allWorkouts[existingIndex].exercises.push(...todayExercises);
+        // Merge into existing session
+        const existing = allWorkouts[existingIndex];
+        existing.exercises.push(...todayExercises);
+        existing.exerciseCount = existing.exercises.length;
+        existing.totalVolume = existing.exercises.reduce((sum, ex) => sum + (ex.weight * ex.reps * ex.sets), 0);
+        existing.muscleGroups = [...new Set(existing.exercises.map(ex => {
+            const preset = WORKOUT_PRESETS.find(p => p.name === ex.name);
+            return preset ? preset.group : 'other';
+        }))];
     } else {
         allWorkouts.unshift(workout);
     }
 
     saveWorkouts();
+
+    // Update personal records for each exercise
+    if (isLoggedIn) {
+        todayExercises.forEach(ex => updatePersonalRecord(ex));
+    }
+
     todayExercises = [];
+    sessionStartTime = null;
     saveTodayExercises();
     updateTodayView();
     updateHistoryView();
@@ -402,6 +487,9 @@ function updateTodayView() {
 
     countBadge.textContent = `${todayExercises.length} exercise${todayExercises.length !== 1 ? 's' : ''}`;
     finishBtn.style.display = 'flex';
+
+    // Calculate running total volume
+    const runningVolume = todayExercises.reduce((sum, ex) => sum + (ex.weight * ex.reps * ex.sets), 0);
 
     list.innerHTML = todayExercises.map(ex => `
         <div class="exercise-item" data-id="${ex.id}">
@@ -442,31 +530,59 @@ function updateHistoryView() {
         return;
     }
 
-    list.innerHTML = allWorkouts.map(workout => `
+    list.innerHTML = allWorkouts.map(workout => {
+        const volume = workout.totalVolume || workout.exercises.reduce((s, e) => s + (e.weight * e.reps * e.sets), 0);
+        const exCount = workout.exerciseCount || workout.exercises.length;
+        const groups = workout.muscleGroups || [];
+        const duration = workout.duration ? formatDuration(workout.duration) : null;
+
+        return `
         <div class="history-card">
             <div class="history-card-header">
-                <span class="history-date">${formatDate(workout.date)}</span>
+                <div>
+                    <span class="history-date">${formatDate(workout.date)}</span>
+                    ${groups.length > 0 ? `<div class="history-muscles">${groups.map(g => `<span class="muscle-tag">${g}</span>`).join('')}</div>` : ''}
+                </div>
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <span class="history-count">${workout.exercises.length} exercise${workout.exercises.length !== 1 ? 's' : ''}</span>
                     <button class="history-delete" onclick="deleteWorkout(${workout.id})" title="Delete">🗑️</button>
                 </div>
             </div>
+
+            <div class="history-stats-row">
+                <div class="history-stat">
+                    <span class="history-stat-value">${exCount}</span>
+                    <span class="history-stat-label">exercises</span>
+                </div>
+                <div class="history-stat">
+                    <span class="history-stat-value">${formatVolume(volume)}</span>
+                    <span class="history-stat-label">volume (kg)</span>
+                </div>
+                ${duration ? `
+                <div class="history-stat">
+                    <span class="history-stat-value">${duration}</span>
+                    <span class="history-stat-label">duration</span>
+                </div>` : ''}
+            </div>
+
             <div class="history-exercises">
                 ${workout.exercises.map(ex => `
                     <div class="history-exercise-row">
-                        <span class="history-exercise-name">${escapeHtml(ex.name)}</span>
-                        <span class="history-exercise-stats">${ex.weight}kg × ${ex.reps} reps × ${ex.sets} sets</span>
+                        <div class="history-exercise-left">
+                            <span class="history-exercise-name">${escapeHtml(ex.name)}</span>
+                            ${ex.notes ? `<span class="history-exercise-note">${escapeHtml(ex.notes)}</span>` : ''}
+                        </div>
+                        <span class="history-exercise-stats">${ex.weight}kg × ${ex.reps} × ${ex.sets}</span>
                     </div>
                 `).join('')}
             </div>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
 }
 
 function deleteWorkout(id) {
     allWorkouts = allWorkouts.filter(w => w.id !== id);
     saveWorkoutsLocal();
-    if (isLoggedIn) deleteWorkoutFromCloud(id);
+    if (isLoggedIn) deleteSessionFromCloud(id);
     updateHistoryView();
     updateCalendarView();
     renderWeekTracker();
@@ -718,6 +834,19 @@ function escapeHtml(text) {
 function formatDate(dateStr) {
     const date = new Date(dateStr + 'T00:00:00');
     return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function formatDuration(ms) {
+    const mins = Math.floor(ms / 60000);
+    if (mins < 60) return `${mins}m`;
+    const hrs = Math.floor(mins / 60);
+    const remMins = mins % 60;
+    return `${hrs}h ${remMins}m`;
+}
+
+function formatVolume(vol) {
+    if (vol >= 1000) return `${(vol / 1000).toFixed(1)}k`;
+    return String(Math.round(vol));
 }
 
 function createEmptyState(icon, message) {
