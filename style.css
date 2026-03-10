@@ -228,6 +228,19 @@ body::before {
     line-height: 1.5;
 }
 
+/* Flex Modal Specifics */
+.flex-modal-card {
+    max-width: 400px;
+    padding: var(--space-md);
+}
+
+.flex-canvas-container {
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
 .btn-google {
     display: flex;
     align-items: center;

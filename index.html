@@ -71,6 +71,33 @@
         </div>
     </div>
 
+    <!-- Flex Exporter Modal -->
+    <div class="modal-overlay" id="flex-modal" style="display:none;">
+        <div class="modal-card flex-modal-card">
+            <div class="modal-header">
+                <h2>Share Your Flex 💪</h2>
+                <button class="modal-close" id="flex-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-subtitle">Save this summary or share it directly to your IG Story!</p>
+                <div class="flex-canvas-container">
+                    <!-- The generated image will be drawn here -->
+                    <canvas id="flex-canvas" width="1080" height="1920" style="width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);"></canvas>
+                </div>
+                <div class="flex-actions" style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn btn-primary" id="btn-share-flex" style="width: 100%; justify-content: center;">
+                        <span class="btn-icon">📸</span>
+                        <span>Share to Story</span>
+                    </button>
+                    <button class="btn btn-secondary" id="btn-download-flex" style="width: 100%; justify-content: center;">
+                        <span class="btn-icon">⬇️</span>
+                        <span>Save Image</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Navigation -->
     <nav class="navbar" id="navbar">
         <div class="nav-brand">

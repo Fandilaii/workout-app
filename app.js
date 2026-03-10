@@ -451,6 +451,14 @@ function finishWorkout() {
         todayExercises.forEach(ex => updatePersonalRecord(ex));
     }
 
+    // Trigger IG Story Flex Exporter before clearing data
+    openFlexModal({
+        date: new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }),
+        volume: totalVolume,
+        duration: duration,
+        exercises: [...todayExercises]
+    });
+
     todayExercises = [];
     sessionStartTime = null;
     saveTodayExercises();
@@ -501,6 +509,159 @@ function updateTodayView() {
             <button class="exercise-delete" onclick="deleteExercise(${ex.id})" title="Remove">🗑️</button>
         </div>
     `).join('');
+}
+
+// ===== IG STORY FLEX EXPORTER =====
+let flexBlob = null;
+
+function openFlexModal(workoutData) {
+    const modal = document.getElementById('flex-modal');
+    modal.style.display = 'flex';
+    flexBlob = null;
+    generateFlexCanvas(workoutData);
+}
+
+document.getElementById('flex-close').addEventListener('click', () => {
+    document.getElementById('flex-modal').style.display = 'none';
+});
+
+document.getElementById('btn-share-flex').addEventListener('click', async () => {
+    if (!flexBlob) return showToast('Generating image...', 'error');
+    const file = new File([flexBlob], 'fitpulse-workout.png', { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+            await navigator.share({
+                files: [file],
+                title: 'My FitPulse Workout',
+                text: 'Just smashed a workout on FitPulse! 💪'
+            });
+        } catch (err) {
+            console.log('Share canceled or failed', err);
+        }
+    } else {
+        showToast('Native sharing not supported. Use Save Image.', 'error');
+    }
+});
+
+document.getElementById('btn-download-flex').addEventListener('click', () => {
+    if (!flexBlob) return;
+    const url = URL.createObjectURL(flexBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `FitPulse_Flex_${getTodayString()}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+});
+
+function generateFlexCanvas(data) {
+    const canvas = document.getElementById('flex-canvas');
+    const ctx = canvas.getContext('2d');
+    const W = 1080;
+    const H = 1920;
+
+    // Background Gradient (Dark Emerald)
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, '#0d0f0e');      // --bg-dark
+    grad.addColorStop(0.5, '#162b1d');    // Mid green-dark
+    grad.addColorStop(1, '#0d0f0e');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Subtle glow circle in middle
+    const glow = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, 800);
+    glow.addColorStop(0, 'rgba(80, 200, 120, 0.15)');
+    glow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, H);
+
+    // Header: Logo / Brand
+    ctx.fillStyle = '#50C878'; // Primary green
+    ctx.font = '900 80px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('FitPulse', W/2, 200);
+
+    ctx.fillStyle = '#8a9a90';
+    ctx.font = '500 40px Inter, sans-serif';
+    ctx.fillText(data.date, W/2, 270);
+
+    // Big Title
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '800 110px Inter, sans-serif';
+    ctx.fillText('WORKOUT', W/2, 500);
+    ctx.fillText('COMPLETE', W/2, 620);
+
+    // Stats Boxes
+    const drawStatBox = (x, y, label, value) => {
+        ctx.fillStyle = 'rgba(255,255,255,0.05)';
+        ctx.strokeStyle = 'rgba(80, 200, 120, 0.3)';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.roundRect(x, y, 400, 250, 40);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#8a9a90';
+        ctx.font = '600 40px Inter, sans-serif';
+        ctx.fillText(label, x + 200, y + 80);
+
+        ctx.fillStyle = '#50C878';
+        ctx.font = '800 70px Inter, sans-serif';
+        ctx.fillText(value, x + 200, y + 180);
+    };
+
+    const mins = Math.max(1, Math.round(data.duration / 60000));
+    drawStatBox(100, 750, 'VOLUME', formatVolume(data.volume));
+    drawStatBox(580, 750, 'DURATION', `${mins} min`);
+
+    // Top Exercises
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#f0f2f0';
+    ctx.font = '700 50px Inter, sans-serif';
+    ctx.fillText('Exercises:', 100, 1150);
+
+    let currentY = 1250;
+    // Show up to 5 exercises to fit
+    const displayExs = data.exercises.slice(0, 5);
+    
+    displayExs.forEach(ex => {
+        // Dot
+        ctx.fillStyle = '#50C878';
+        ctx.beginPath();
+        ctx.arc(120, currentY - 15, 12, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Name
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '600 45px Inter, sans-serif';
+        ctx.fillText(ex.name, 160, currentY);
+
+        // Sets x Reps
+        ctx.fillStyle = '#8a9a90';
+        ctx.textAlign = 'right';
+        ctx.fillText(`${ex.sets} × ${ex.reps}`, W - 100, currentY);
+        ctx.textAlign = 'left';
+
+        currentY += 90;
+    });
+
+    if (data.exercises.length > 5) {
+        ctx.fillStyle = '#8a9a90';
+        ctx.font = 'italic 40px Inter, sans-serif';
+        ctx.fillText(`+ ${data.exercises.length - 5} more exercises...`, 160, currentY + 20);
+    }
+
+    // Footer
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '500 35px Inter, sans-serif';
+    ctx.fillText('Tracked with FitPulse App', W/2, 1820);
+
+    // Export to blob for sharing
+    canvas.toBlob(blob => {
+        flexBlob = blob;
+    }, 'image/png');
 }
 
 // ===== PERFORMANCE CHART =====
