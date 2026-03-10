@@ -284,7 +284,7 @@ body::before {
 
 /* ===== 7-Day Week Tracker ===== */
 .week-tracker {
-    padding: var(--space-lg) 0 var(--space-md);
+    padding: var(--space-lg) var(--space-lg) var(--space-md);
     text-align: center;
     position: sticky;
     top: 56px;
@@ -292,6 +292,8 @@ body::before {
     background: rgba(13, 15, 14, 0.85);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
+    margin-left: calc(-1 * var(--space-lg));
+    margin-right: calc(-1 * var(--space-lg));
 }
 
 .week-tracker-title {
