@@ -68,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTimer();
     setupCalendar();
     setupAccountUI();
+    setupChartTabs();
     renderWeekTracker();
     updateTodayView();
     updateHistoryView();
@@ -507,6 +508,146 @@ function updateTodayView() {
     `).join('');
 }
 
+// ===== PERFORMANCE CHART =====
+let chartMetric = 'volume';
+
+function setupChartTabs() {
+    const tabs = document.querySelectorAll('.chart-tab');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            chartMetric = tab.dataset.metric;
+            renderChart();
+        });
+    });
+}
+
+function getWeeklyData() {
+    const weeks = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (let w = 6; w >= 0; w--) {
+        const weekEnd = new Date(today);
+        weekEnd.setDate(weekEnd.getDate() - (w * 7));
+        const weekStart = new Date(weekEnd);
+        weekStart.setDate(weekStart.getDate() - 6);
+
+        const weekWorkouts = allWorkouts.filter(workout => {
+            const d = new Date(workout.date + 'T00:00:00');
+            return d >= weekStart && d <= weekEnd;
+        });
+
+        const volume = weekWorkouts.reduce((sum, w) => {
+            const v = w.totalVolume || w.exercises.reduce((s, e) => s + (e.weight * e.reps * e.sets), 0);
+            return sum + v;
+        }, 0);
+
+        const startLabel = `${weekStart.getDate()}/${weekStart.getMonth() + 1}`;
+        const endLabel = `${weekEnd.getDate()}/${weekEnd.getMonth() + 1}`;
+
+        weeks.push({
+            label: w === 0 ? 'This wk' : `${startLabel}`,
+            volume: Math.round(volume),
+            sessions: weekWorkouts.length,
+        });
+    }
+    return weeks;
+}
+
+function renderChart() {
+    const canvas = document.getElementById('performance-chart');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+
+    // Set canvas size for sharp rendering
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+
+    const W = rect.width;
+    const H = rect.height;
+
+    // Clear
+    ctx.clearRect(0, 0, W, H);
+
+    const weeks = getWeeklyData();
+    const values = weeks.map(w => chartMetric === 'volume' ? w.volume : w.sessions);
+    const maxVal = Math.max(...values, 1);
+
+    const padding = { top: 24, bottom: 36, left: 8, right: 8 };
+    const chartW = W - padding.left - padding.right;
+    const chartH = H - padding.top - padding.bottom;
+    const barGap = 10;
+    const barWidth = (chartW - barGap * (weeks.length - 1)) / weeks.length;
+
+    // Draw grid lines
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+        const y = padding.top + (chartH / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(W - padding.right, y);
+        ctx.stroke();
+    }
+
+    // Draw bars
+    weeks.forEach((week, i) => {
+        const val = values[i];
+        const barH = maxVal > 0 ? (val / maxVal) * chartH : 0;
+        const x = padding.left + i * (barWidth + barGap);
+        const y = padding.top + chartH - barH;
+        const radius = Math.min(barWidth / 2, 6);
+
+        // Bar gradient
+        const grad = ctx.createLinearGradient(x, y, x, padding.top + chartH);
+        if (val > 0) {
+            grad.addColorStop(0, 'rgba(80, 200, 120, 0.9)');
+            grad.addColorStop(1, 'rgba(80, 200, 120, 0.3)');
+        } else {
+            grad.addColorStop(0, 'rgba(255,255,255,0.06)');
+            grad.addColorStop(1, 'rgba(255,255,255,0.02)');
+        }
+
+        // Rounded bar
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        if (barH > radius * 2) {
+            ctx.moveTo(x, y + radius);
+            ctx.arcTo(x, y, x + radius, y, radius);
+            ctx.arcTo(x + barWidth, y, x + barWidth, y + radius, radius);
+            ctx.lineTo(x + barWidth, padding.top + chartH);
+            ctx.lineTo(x, padding.top + chartH);
+        } else if (barH > 2) {
+            ctx.rect(x, y, barWidth, barH);
+        } else {
+            // Minimum 2px bar for zero values
+            ctx.rect(x, padding.top + chartH - 2, barWidth, 2);
+        }
+        ctx.fill();
+
+        // Value label above bar
+        if (val > 0) {
+            ctx.fillStyle = '#f0f2f0';
+            ctx.font = '600 9px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            const label = chartMetric === 'volume' ? formatVolume(val) : String(val);
+            ctx.fillText(label, x + barWidth / 2, y - 6);
+        }
+
+        // Week label below
+        ctx.fillStyle = '#4a5a50';
+        ctx.font = '600 8px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(week.label, x + barWidth / 2, H - 8);
+    });
+}
+
 // ===== HISTORY VIEW =====
 function updateHistoryView() {
     const list = document.getElementById('history-list');
@@ -523,6 +664,9 @@ function updateHistoryView() {
     });
     monthEl.textContent = thisMonth.length;
     streakEl.textContent = calculateStreak();
+
+    // Update chart
+    renderChart();
 
     if (allWorkouts.length === 0) {
         list.innerHTML = '';

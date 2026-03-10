@@ -225,6 +225,18 @@
                 </div>
             </div>
 
+            <!-- Weekly Performance Chart -->
+            <div class="chart-card card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Weekly Performance</h3>
+                    <div class="chart-toggle">
+                        <button class="chart-tab active" data-metric="volume">Volume</button>
+                        <button class="chart-tab" data-metric="sessions">Sessions</button>
+                    </div>
+                </div>
+                <canvas id="performance-chart" width="500" height="180"></canvas>
+            </div>
+
             <div class="history-list" id="history-list">
                 <div class="empty-state" id="empty-history">
                     <span class="empty-icon">📭</span>
