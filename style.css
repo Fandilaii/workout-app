@@ -110,6 +110,178 @@ body::before {
     transition: border-color var(--transition-base);
 }
 
+/* ===== Account Bar ===== */
+.account-bar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    padding: 10px var(--space-md);
+    background: rgba(13, 15, 14, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.account-bar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.app-title {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--primary);
+    letter-spacing: -0.02em;
+}
+
+.account-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-color);
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-base);
+    overflow: hidden;
+    padding: 0;
+}
+
+.account-btn:hover {
+    background: var(--primary-glow);
+    border-color: var(--border-active);
+}
+
+.account-avatar {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.account-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--radius-full);
+}
+
+/* ===== Account Modal ===== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-lg);
+    animation: fadeIn 0.2s ease;
+}
+
+.modal-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    width: 100%;
+    max-width: 360px;
+    padding: var(--space-lg);
+    animation: slideIn 0.3s ease;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-lg);
+}
+
+.modal-header h2 {
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 4px;
+    transition: color var(--transition-fast);
+}
+
+.modal-close:hover { color: var(--text-primary); }
+
+.modal-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    margin-bottom: var(--space-lg);
+    line-height: 1.5;
+}
+
+.btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    width: 100%;
+    padding: 12px var(--space-lg);
+    background: #fff;
+    color: #333;
+    border: none;
+    border-radius: var(--radius-full);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.btn-google:hover {
+    background: #f0f0f0;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.user-photo {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+    border: 2px solid var(--primary);
+}
+
+.user-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.user-email {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.sync-status {
+    font-size: 0.75rem;
+    color: var(--primary);
+    background: var(--primary-glow);
+    padding: 8px var(--space-md);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-md);
+    text-align: center;
+    font-weight: 600;
+}
+
 /* ===== 7-Day Week Tracker ===== */
 .week-tracker {
     padding: var(--space-lg) 0 var(--space-md);

@@ -52,6 +52,7 @@ let timerTotal = 0;
 let timerRunning = false;
 let selectedPreset = null;
 let activeGroup = 'all';
+let isLoggedIn = false;
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
@@ -62,12 +63,92 @@ document.addEventListener('DOMContentLoaded', () => {
     setupFilterTabs();
     setupTimer();
     setupCalendar();
+    setupAccountUI();
     renderWeekTracker();
     updateTodayView();
     updateHistoryView();
     updateCalendarView();
     populateExerciseSuggestions();
+
+    // Firebase Auth listener
+    auth.onAuthStateChanged(async (user) => {
+        isLoggedIn = !!user;
+        updateAccountUI(user);
+
+        if (user) {
+            // Migrate local data to cloud on first login
+            await syncLocalToCloud();
+            // Load from cloud
+            const cloudWorkouts = await loadWorkoutsFromCloud();
+            if (cloudWorkouts !== null) {
+                allWorkouts = cloudWorkouts;
+                saveWorkoutsLocal(); // cache locally too
+            }
+        } else {
+            loadData(); // fallback to localStorage
+        }
+
+        // Refresh all views
+        renderWeekTracker();
+        updateTodayView();
+        updateHistoryView();
+        updateCalendarView();
+    });
 });
+
+// ===== ACCOUNT UI =====
+function setupAccountUI() {
+    const accountBtn = document.getElementById('account-btn');
+    const modal = document.getElementById('account-modal');
+    const closeBtn = document.getElementById('modal-close');
+    const googleBtn = document.getElementById('btn-google-signin');
+    const signOutBtn = document.getElementById('btn-signout');
+
+    accountBtn.addEventListener('click', () => {
+        modal.style.display = 'flex';
+    });
+
+    closeBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.style.display = 'none';
+    });
+
+    googleBtn.addEventListener('click', async () => {
+        await signInWithGoogle();
+        modal.style.display = 'none';
+    });
+
+    signOutBtn.addEventListener('click', async () => {
+        await signOutUser();
+        modal.style.display = 'none';
+    });
+}
+
+function updateAccountUI(user) {
+    const loggedOut = document.getElementById('auth-logged-out');
+    const loggedIn = document.getElementById('auth-logged-in');
+    const avatarEl = document.getElementById('account-avatar');
+
+    if (user) {
+        loggedOut.style.display = 'none';
+        loggedIn.style.display = 'block';
+        document.getElementById('user-name').textContent = user.displayName || 'User';
+        document.getElementById('user-email').textContent = user.email || '';
+        document.getElementById('user-photo').src = user.photoURL || '';
+
+        // Update avatar to user photo
+        if (user.photoURL) {
+            avatarEl.innerHTML = `<img src="${user.photoURL}" alt="${user.displayName}">`;
+        }
+    } else {
+        loggedOut.style.display = 'block';
+        loggedIn.style.display = 'none';
+        avatarEl.innerHTML = '👤';
+    }
+}
 
 // ===== DATA =====
 function loadData() {
@@ -80,8 +161,16 @@ function loadData() {
     }
 }
 
-function saveWorkouts() {
+function saveWorkoutsLocal() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(allWorkouts));
+}
+
+function saveWorkouts() {
+    saveWorkoutsLocal();
+    // Also save each workout to cloud if logged in
+    if (isLoggedIn) {
+        allWorkouts.forEach(w => saveWorkoutToCloud(w));
+    }
 }
 
 function saveTodayExercises() {
@@ -95,6 +184,7 @@ function getTodayString() {
 function getWorkoutDates() {
     return allWorkouts.map(w => w.date);
 }
+
 
 // ===== 7-DAY WEEK TRACKER =====
 function renderWeekTracker() {
@@ -375,7 +465,8 @@ function updateHistoryView() {
 
 function deleteWorkout(id) {
     allWorkouts = allWorkouts.filter(w => w.id !== id);
-    saveWorkouts();
+    saveWorkoutsLocal();
+    if (isLoggedIn) deleteWorkoutFromCloud(id);
     updateHistoryView();
     updateCalendarView();
     renderWeekTracker();
