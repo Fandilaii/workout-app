@@ -286,6 +286,12 @@ body::before {
 .week-tracker {
     padding: var(--space-lg) 0 var(--space-md);
     text-align: center;
+    position: sticky;
+    top: 56px;
+    z-index: 40;
+    background: rgba(13, 15, 14, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
 }
 
 .week-tracker-title {
