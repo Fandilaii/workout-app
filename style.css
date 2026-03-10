@@ -112,13 +112,16 @@ body::before {
 
 /* ===== Account Bar (Unified Header) ===== */
 .account-bar {
+    display: block;
     position: sticky;
     top: 0;
     z-index: 50;
-    background: rgba(13, 15, 14, 0.85);
+    background: rgba(13, 15, 14, 0.88);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    width: 100%;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -286,6 +289,8 @@ body::before {
 
 /* ===== 7-Day Week Tracker (Inside Header) ===== */
 .week-tracker {
+    display: block;
+    width: 100%;
     padding: 0 var(--space-lg) var(--space-md);
     text-align: center;
     max-width: 500px;
