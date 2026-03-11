@@ -391,8 +391,9 @@ function saveWorkoutsLocal() {
 
 function saveWorkouts() {
     saveWorkoutsLocal();
-    if (isLoggedIn) {
-        allWorkouts.forEach(w => saveSessionToCloud(w));
+    if (isLoggedIn && allWorkouts.length > 0) {
+        // Only save the most recent session — not all of them
+        saveSessionToCloud(allWorkouts[0]);
     }
 }
 
@@ -778,6 +779,9 @@ function finishWorkout() {
 
     const duration = sessionStartTime ? Date.now() - sessionStartTime : 0;
 
+    // Pre-build a lookup map for O(1) muscle group resolution
+    const presetMap = new Map(WORKOUT_PRESETS.map(p => [p.name, p.group]));
+
     const workout = {
         id: Date.now(),
         date: getTodayString(),
@@ -787,8 +791,7 @@ function finishWorkout() {
         totalVolume: Math.round(totalVolume),
         duration: duration,
         muscleGroups: [...new Set(todayExercises.map(ex => {
-            const preset = WORKOUT_PRESETS.find(p => p.name === ex.name);
-            return preset ? preset.group : 'other';
+            return presetMap.get(ex.name) || 'other';
         }))],
     };
 
@@ -800,8 +803,7 @@ function finishWorkout() {
         existing.exerciseCount = existing.exercises.length;
         existing.totalVolume = existing.exercises.reduce((sum, ex) => sum + (ex.weight * ex.reps * ex.sets), 0);
         existing.muscleGroups = [...new Set(existing.exercises.map(ex => {
-            const preset = WORKOUT_PRESETS.find(p => p.name === ex.name);
-            return preset ? preset.group : 'other';
+            return presetMap.get(ex.name) || 'other';
         }))];
     } else {
         allWorkouts.unshift(workout);
@@ -1369,17 +1371,17 @@ function deleteWorkout(id) {
 function calculateStreak() {
     if (allWorkouts.length === 0) return 0;
 
-    const dates = [...new Set(allWorkouts.map(w => w.date))].sort().reverse();
+    const dateSet = new Set(allWorkouts.map(w => w.date));
     let streak = 0;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    for (let i = 0; i < dates.length; i++) {
+    for (let i = 0; i < 365; i++) {
         const checkDate = new Date(today);
         checkDate.setDate(checkDate.getDate() - i);
         const checkStr = checkDate.toISOString().split('T')[0];
 
-        if (dates.includes(checkStr)) {
+        if (dateSet.has(checkStr)) {
             streak++;
         } else {
             break;
@@ -1674,20 +1676,11 @@ function updateTrophyView() {
     `).join('');
 }
 
-// ===== EXERCISE SUGGESTIONS =====
-function populateExerciseSuggestions() {
-    const datalist = document.getElementById('exercise-suggestions');
-    const presetNames = WORKOUT_PRESETS.map(p => p.name);
-    const historyNames = allWorkouts.flatMap(w => w.exercises.map(e => e.name));
-    const allNames = [...new Set([...presetNames, ...historyNames])].sort();
-    datalist.innerHTML = allNames.map(name => `<option value="${name}">`).join('');
-}
+// Dead code removed: populateExerciseSuggestions was referencing a non-existent datalist.
 
 // ===== UTILITIES =====
 function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function formatDate(dateStr) {
