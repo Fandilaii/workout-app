@@ -75,8 +75,40 @@
                             <div class="user-email" id="user-email"></div>
                         </div>
                     </div>
-                    <div class="sync-status" id="sync-status">☁️ Workouts synced to cloud</div>
-                    <button class="btn btn-secondary" id="btn-signout">Sign Out</button>
+
+                    <div class="health-profile-form" style="margin: var(--space-md) 0; padding-top: var(--space-md); border-top: 1px solid var(--border-color);">
+                        <h3 style="font-size: 0.95rem; margin-bottom: var(--space-sm);">Health Profile</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="profile-age">Age</label>
+                                <input type="number" id="profile-age" placeholder="e.g. 25" min="10" max="120">
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-gender">Gender</label>
+                                <select id="profile-gender" style="width: 100%; padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-primary); font-family: inherit; font-size: 0.95rem; outline: none;">
+                                    <option value="">Select...</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="profile-weight">Weight (kg)</label>
+                                <input type="number" id="profile-weight" placeholder="e.g. 70" step="0.1" min="20">
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-height">Height (cm)</label>
+                                <input type="number" id="profile-height" placeholder="e.g. 175" min="50">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" id="btn-save-profile" style="width: 100%; justify-content: center; margin-bottom: var(--space-sm);">
+                            Save Health Data
+                        </button>
+                        <div class="sync-status" id="sync-status" style="margin-bottom: var(--space-md);">☁️ Workouts synced to cloud</div>
+                    </div>
+
+                    <button class="btn btn-secondary" id="btn-signout" style="width: 100%; justify-content: center;">Sign Out</button>
                 </div>
             </div>
         </div>

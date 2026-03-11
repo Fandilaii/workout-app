@@ -222,6 +222,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 userRoutines = cloudRoutines;
                 localStorage.setItem('fitpulse_routines', JSON.stringify(userRoutines));
             }
+
+            // Load Health Profile
+            const profile = await getUserProfile();
+            if (profile) populateHealthForm(profile);
+
         } else {
             loadData();
         }
@@ -272,6 +277,7 @@ function setupAccountUI() {
     const closeBtn = document.getElementById('modal-close');
     const googleBtn = document.getElementById('btn-google-signin');
     const signOutBtn = document.getElementById('btn-signout');
+    const saveProfileBtn = document.getElementById('btn-save-profile');
 
     accountBtn.addEventListener('click', () => modal.style.display = 'flex');
     closeBtn.addEventListener('click', () => modal.style.display = 'none');
@@ -285,7 +291,51 @@ function setupAccountUI() {
     signOutBtn.addEventListener('click', async () => {
         await signOutUser();
         modal.style.display = 'none';
+        clearHealthForm();
     });
+
+    if (saveProfileBtn) {
+        saveProfileBtn.addEventListener('click', async () => {
+            if (!isLoggedIn) return;
+            const age = document.getElementById('profile-age').value;
+            const gender = document.getElementById('profile-gender').value;
+            const weight = document.getElementById('profile-weight').value;
+            const height = document.getElementById('profile-height').value;
+            
+            const healthData = {};
+            if (age) healthData.age = parseInt(age);
+            if (gender) healthData.gender = gender;
+            if (weight) healthData.weight = parseFloat(weight);
+            if (height) healthData.height = parseFloat(height);
+
+            saveProfileBtn.disabled = true;
+            saveProfileBtn.textContent = 'Saving...';
+            
+            const success = await updateHealthProfile(healthData);
+            if (success) {
+                showToast('Health Profile saved! 👤', 'success');
+            } else {
+                showToast('Failed to save profile.', 'error');
+            }
+            
+            saveProfileBtn.disabled = false;
+            saveProfileBtn.textContent = 'Save Health Data';
+        });
+    }
+}
+
+function populateHealthForm(profile) {
+    if (profile.age) document.getElementById('profile-age').value = profile.age;
+    if (profile.gender) document.getElementById('profile-gender').value = profile.gender;
+    if (profile.weight) document.getElementById('profile-weight').value = profile.weight;
+    if (profile.height) document.getElementById('profile-height').value = profile.height;
+}
+
+function clearHealthForm() {
+    document.getElementById('profile-age').value = '';
+    document.getElementById('profile-gender').value = '';
+    document.getElementById('profile-weight').value = '';
+    document.getElementById('profile-height').value = '';
 }
 
 function updateAccountUI(user) {

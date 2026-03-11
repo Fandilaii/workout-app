@@ -93,6 +93,32 @@ async function saveUserProfile(user) {
     }
 }
 
+async function getUserProfile() {
+    const ref = userRef();
+    if (!ref) return null;
+
+    try {
+        const doc = await ref.get();
+        return doc.exists ? doc.data() : null;
+    } catch (error) {
+        console.error('Get profile error:', error);
+        return null;
+    }
+}
+
+async function updateHealthProfile(healthData) {
+    const ref = userRef();
+    if (!ref) return false;
+
+    try {
+        await ref.set(healthData, { merge: true });
+        return true;
+    } catch (error) {
+        console.error('Update health profile error:', error);
+        return false;
+    }
+}
+
 async function getUserSettings() {
     const ref = userRef();
     if (!ref) return null;
