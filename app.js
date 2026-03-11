@@ -143,6 +143,50 @@ let activeGroup = 'all';
 let isLoggedIn = false;
 let sessionStartTime = null;
 
+// ===== LOADING OVERLAY =====
+function showLoader(text = 'Syncing your data...') {
+    const overlay = document.getElementById('loading-overlay');
+    const label = document.getElementById('loading-text');
+    if (overlay) { overlay.classList.remove('hidden'); }
+    if (label) { label.textContent = text; }
+}
+
+function hideLoader() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) { overlay.classList.add('hidden'); }
+}
+
+function showSkeletonHistory() {
+    const list = document.getElementById('history-list');
+    if (!list) return;
+    list.innerHTML = Array.from({ length: 3 }, () => `
+        <div class="skeleton skeleton-card">
+            <div class="skeleton-line medium"></div>
+            <div class="skeleton-row">
+                <div class="skeleton-stat"></div>
+                <div class="skeleton-stat"></div>
+                <div class="skeleton-stat"></div>
+            </div>
+            <div class="skeleton-line long"></div>
+            <div class="skeleton-line short"></div>
+        </div>
+    `).join('');
+}
+
+function showSkeletonTrophy() {
+    const container = document.getElementById('badges-container');
+    if (!container) return;
+    container.innerHTML = Array.from({ length: 4 }, () => `
+        <div class="skeleton skeleton-card" style="display:flex; gap:12px; align-items:center; padding: 16px;">
+            <div class="skeleton-circle"></div>
+            <div style="flex:1">
+                <div class="skeleton-line medium"></div>
+                <div class="skeleton-line short"></div>
+            </div>
+        </div>
+    `).join('');
+}
+
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
@@ -192,6 +236,10 @@ document.addEventListener('DOMContentLoaded', () => {
         updateAccountUI(user);
 
         if (user) {
+            showLoader('Syncing your workouts...');
+            showSkeletonHistory();
+            showSkeletonTrophy();
+
             await syncLocalToCloud();
 
             const cloudSessions = await loadSessionsFromCloud();
@@ -227,6 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const profile = await getUserProfile();
             if (profile) populateHealthForm(profile);
 
+            hideLoader();
         } else {
             loadData();
         }
@@ -318,7 +367,8 @@ function setupAccountUI() {
             if (height) healthData.height = parseFloat(height);
 
             saveProfileBtn.disabled = true;
-            saveProfileBtn.textContent = 'Saving...';
+            saveProfileBtn.classList.add('loading');
+            saveProfileBtn.innerHTML = '<span class="btn-spinner"></span> Saving...';
             
             const success = await updateHealthProfile(healthData);
             if (success) {
@@ -328,6 +378,7 @@ function setupAccountUI() {
             }
             
             saveProfileBtn.disabled = false;
+            saveProfileBtn.classList.remove('loading');
             saveProfileBtn.textContent = 'Save Health Data';
         });
     }
