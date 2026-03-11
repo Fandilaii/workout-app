@@ -4,14 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description"
-        content="FitPulse — Track your workouts, log exercises, and monitor your fitness progress with rest timers and calendar view.">
+    <meta name="description" content="FitPulse — Track your workouts, log exercises, and monitor your fitness progress with rest timers and calendar view.">
+    <meta name="theme-color" content="#0d0f0e">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="favicon.png">
+    
     <title>FitPulse — Personal Workout Assistant</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -98,6 +100,26 @@
         </div>
     </div>
 
+    <!-- Save Routine Modal -->
+    <div class="modal-overlay" id="routine-modal" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Save Routine ✨</h2>
+                <button class="modal-close" id="routine-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-subtitle">Save your current exercises as a reusable template.</p>
+                <div class="form-group" style="margin-bottom: var(--space-lg);">
+                    <label for="routine-name">Routine Name</label>
+                    <input type="text" id="routine-name" placeholder="e.g., Push Day, Full Body..." autocomplete="off">
+                </div>
+                <button class="btn btn-primary" id="btn-confirm-routine" style="width: 100%; justify-content: center;">
+                    Save Template
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Navigation -->
     <nav class="navbar" id="navbar">
         <div class="nav-brand">
@@ -107,19 +129,18 @@
         <div class="nav-links">
             <button class="nav-btn active" data-view="workout" id="nav-workout">
                 <span class="nav-icon">💪</span>
-                <span class="nav-label">Workout</span>
             </button>
             <button class="nav-btn" data-view="history" id="nav-history">
                 <span class="nav-icon">📋</span>
-                <span class="nav-label">History</span>
             </button>
             <button class="nav-btn" data-view="calendar" id="nav-calendar">
                 <span class="nav-icon">📅</span>
-                <span class="nav-label">Calendar</span>
+            </button>
+            <button class="nav-btn" data-view="trophy" id="nav-trophy">
+                <span class="nav-icon">🏆</span>
             </button>
             <button class="nav-btn" data-view="timer" id="nav-timer">
                 <span class="nav-icon">⏱️</span>
-                <span class="nav-label">Timer</span>
             </button>
         </div>
     </nav>
@@ -170,9 +191,26 @@
                 </button>
             </form>
 
+            <!-- My Routines Section -->
+            <div class="routines-section" id="routines-section" style="display: none; margin-bottom: var(--space-lg);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm);">
+                    <h3 class="selector-title" style="margin-bottom: 0;">My Routines</h3>
+                </div>
+                <div class="workout-chips-scroll" id="routines-list">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+
             <!-- Quick Select with Muscle Group Filters -->
             <div class="workout-selector" id="workout-selector">
-                <h3 class="selector-title">Quick Select</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm);">
+                    <h3 class="selector-title" style="margin-bottom: 0;">Quick Select</h3>
+                </div>
+                
+                <div class="search-container">
+                    <input type="text" id="exercise-search" class="exercise-search-input" placeholder="Search 100+ exercises..." autocomplete="off">
+                </div>
+
                 <div class="filter-tabs" id="filter-tabs">
                     <button class="filter-tab active" data-group="all">
                         <span class="filter-tab-icon">🔥</span>
@@ -206,6 +244,14 @@
                         <span class="filter-tab-icon">🤸</span>
                         <span class="filter-tab-label">Shoulder</span>
                     </button>
+                    <button class="filter-tab" data-group="core">
+                        <span class="filter-tab-icon">🧱</span>
+                        <span class="filter-tab-label">Core</span>
+                    </button>
+                    <button class="filter-tab" data-group="cardio">
+                        <span class="filter-tab-icon">🏃</span>
+                        <span class="filter-tab-label">Cardio</span>
+                    </button>
                 </div>
                 <div class="workout-chips-scroll" id="workout-chips">
                     <!-- Filled by JS -->
@@ -224,10 +270,16 @@
                         <p>No exercises logged today. Start your workout!</p>
                     </div>
                 </div>
-                <button class="btn btn-secondary" id="finish-workout-btn" style="display:none;">
-                    <span>Finish Workout</span>
-                    <span class="btn-icon">🎉</span>
-                </button>
+                <div class="session-actions" id="session-actions" style="display:none; gap: var(--space-sm); margin-top: var(--space-md); flex-wrap: wrap;">
+                    <button class="btn btn-secondary" id="save-routine-btn" style="flex: 1; min-height: 48px; border: 2px solid var(--border-color); background: transparent;">
+                        <span>Save as Routine</span>
+                        <span class="btn-icon">💾</span>
+                    </button>
+                    <button class="btn btn-primary" id="finish-workout-btn" style="flex: 1.5; min-height: 48px;">
+                        <span>Finish Workout</span>
+                        <span class="btn-icon">🎉</span>
+                    </button>
+                </div>
             </div>
         </section>
 
@@ -299,6 +351,57 @@
                     <span class="legend-item"><span class="legend-dot active"></span> Workout day</span>
                     <span class="legend-item"><span class="legend-dot today"></span> Today</span>
                 </div>
+            </div>
+        </section>
+
+        <!-- ===== TROPHY / ACHIEVEMENTS VIEW ===== -->
+        <section class="view" id="view-trophy">
+            <div class="view-header">
+                <h1>Trophy Room</h1>
+                <p class="subtitle">Your PRs, Milestones, and Fitness Journey</p>
+            </div>
+
+            <!-- The Big 3 PRs -->
+            <div class="section-title">
+                <h2>The Big 3 PRs</h2>
+                <span class="subtitle-small">Your heaviest lifts</span>
+            </div>
+            
+            <div class="pr-grid">
+                <!-- Bench Press -->
+                <div class="pr-card" id="pr-bench">
+                    <div class="pr-icon-wrapper">🏋️</div>
+                    <div class="pr-details">
+                        <span class="pr-label">Bench Press</span>
+                        <span class="pr-value" id="pr-val-bench">-- kg</span>
+                    </div>
+                </div>
+                <!-- Squat -->
+                <div class="pr-card" id="pr-squat">
+                    <div class="pr-icon-wrapper">🦵</div>
+                    <div class="pr-details">
+                        <span class="pr-label">Squat</span>
+                        <span class="pr-value" id="pr-val-squat">-- kg</span>
+                    </div>
+                </div>
+                <!-- Deadlift -->
+                <div class="pr-card" id="pr-deadlift">
+                    <div class="pr-icon-wrapper">💀</div>
+                    <div class="pr-details">
+                        <span class="pr-label">Deadlift</span>
+                        <span class="pr-value" id="pr-val-deadlift">-- kg</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Achievement Badges -->
+            <div class="section-title" style="margin-top: var(--space-xl);">
+                <h2>Milestone Badges</h2>
+                <span class="subtitle-small">Unlock by staying consistent</span>
+            </div>
+            
+            <div class="badges-grid" id="badges-container">
+                <!-- Badges will be injected here via JS -->
             </div>
         </section>
 

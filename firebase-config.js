@@ -21,6 +21,16 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
+// Enable robust offline persistence for the PWA
+db.enablePersistence()
+  .catch(function(err) {
+      if (err.code == 'failed-precondition') {
+          console.warn('Multiple tabs open, online persistence can only be enabled in one tab at a a time.');
+      } else if (err.code == 'unimplemented') {
+          console.warn('The current browser does not support all of the features required to enable persistence.');
+      }
+  });
+
 // =============================================
 //   AUTH FUNCTIONS
 // =============================================
@@ -207,6 +217,106 @@ async function loadFavoritesFromCloud() {
     } catch (error) {
         console.error('Load favorites error:', error);
         return null;
+    }
+}
+
+// =============================================
+//   CUSTOM EXERCISES
+// =============================================
+//   Structure:
+//   custom_exercises/{exerciseId}: {
+//     id, name, group, addedAt
+//   }
+
+async function addCustomExerciseToCloud(exercise) {
+    const ref = userRef();
+    if (!ref) return false;
+
+    try {
+        await ref.collection('custom_exercises').doc(String(exercise.id)).set({
+            ...exercise,
+            addedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        return true;
+    } catch (error) {
+        console.error('Add custom exercise error:', error);
+        return false;
+    }
+}
+
+async function loadCustomExercisesFromCloud() {
+    const ref = userRef();
+    if (!ref) return null;
+
+    try {
+        const snapshot = await ref.collection('custom_exercises').get();
+        return snapshot.docs.map(doc => doc.data());
+    } catch (error) {
+        console.error('Load custom exercises error:', error);
+        return null;
+    }
+}
+
+async function removeCustomExerciseFromCloud(id) {
+    const ref = userRef();
+    if (!ref) return false;
+
+    try {
+        await ref.collection('custom_exercises').doc(String(id)).delete();
+        return true;
+    } catch (error) {
+        console.error('Delete custom exercise error:', error);
+        return false;
+    }
+}
+
+// =============================================
+//   ROUTINES / TEMPLATES
+// =============================================
+//   Structure:
+//   routines/{routineId}: {
+//     id, name, exercises: [{name, reps, sets}], addedAt
+//   }
+
+async function saveRoutineToCloud(routine) {
+    const ref = userRef();
+    if (!ref) return false;
+
+    try {
+        await ref.collection('routines').doc(String(routine.id)).set({
+            ...routine,
+            addedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        return true;
+    } catch (error) {
+        console.error('Save routine error:', error);
+        return false;
+    }
+}
+
+async function loadRoutinesFromCloud() {
+    const ref = userRef();
+    if (!ref) return null;
+
+    try {
+        const snapshot = await ref.collection('routines').get();
+        return snapshot.docs.map(doc => doc.data());
+    } catch (error) {
+        console.error('Load routines error:', error);
+        return null;
+    }
+}
+
+async function deleteRoutineFromCloud(id) {
+    const ref = userRef();
+    if (!ref) return false;
+
+    try {
+        await ref.collection('routines').doc(String(id)).delete();
+        return true;
+    } catch (error) {
+        console.error('Delete routine error:', error);
+        return false;
     }
 }
 

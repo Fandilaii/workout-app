@@ -1,0 +1,22 @@
+{
+    "name": "FitPulse: Social Fitness",
+    "short_name": "FitPulse",
+    "description": "The ultimate social fitness tracker for logging workouts, tracking PRs, and sharing your journey.",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#0d0f0e",
+    "theme_color": "#0d0f0e",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/favicon.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/favicon.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

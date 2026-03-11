@@ -10,43 +10,128 @@ const FAVORITES_KEY = 'fitpulse_favorites';
 // ===== WORKOUT PRESETS (with muscle groups) =====
 const WORKOUT_PRESETS = [
     // Chest
-    { name: 'Bench Press', icon: '🏋️', group: 'chest', defaultWeight: 60, defaultReps: 8, defaultSets: 3 },
-    { name: 'Incline Bench', icon: '📐', group: 'chest', defaultWeight: 50, defaultReps: 8, defaultSets: 3 },
-    { name: 'Chest Fly', icon: '🦅', group: 'chest', defaultWeight: 14, defaultReps: 12, defaultSets: 3 },
+    { name: 'Barbell Bench Press', icon: '🏋️', group: 'chest', defaultWeight: 60, defaultReps: 8, defaultSets: 3 },
+    { name: 'Dumbbell Bench Press', icon: '✊', group: 'chest', defaultWeight: 20, defaultReps: 10, defaultSets: 3 },
+    { name: 'Incline Barbell Bench', icon: '📐', group: 'chest', defaultWeight: 50, defaultReps: 8, defaultSets: 3 },
+    { name: 'Incline Dumbbell Press', icon: '📐', group: 'chest', defaultWeight: 18, defaultReps: 10, defaultSets: 3 },
+    { name: 'Decline Bench Press', icon: '↘️', group: 'chest', defaultWeight: 50, defaultReps: 10, defaultSets: 3 },
+    { name: 'Machine Chest Press', icon: '🤖', group: 'chest', defaultWeight: 40, defaultReps: 12, defaultSets: 3 },
+    { name: 'Dumbbell Flyes', icon: '🦅', group: 'chest', defaultWeight: 12, defaultReps: 12, defaultSets: 3 },
+    { name: 'Cable Crossover', icon: '❌', group: 'chest', defaultWeight: 15, defaultReps: 15, defaultSets: 3 },
+    { name: 'Pec Deck Machine', icon: '🦋', group: 'chest', defaultWeight: 30, defaultReps: 12, defaultSets: 3 },
     { name: 'Push-ups', icon: '🫸', group: 'chest', defaultWeight: 0, defaultReps: 15, defaultSets: 3 },
-    { name: 'Dips', icon: '⬇️', group: 'chest', defaultWeight: 0, defaultReps: 10, defaultSets: 3 },
+    { name: 'Weighted Push-ups', icon: '🎒', group: 'chest', defaultWeight: 10, defaultReps: 10, defaultSets: 3 },
+    { name: 'Chest Dips', icon: '⬇️', group: 'chest', defaultWeight: 0, defaultReps: 10, defaultSets: 3 },
+    { name: 'Dumbbell Pullover', icon: '⬆️', group: 'chest', defaultWeight: 20, defaultReps: 10, defaultSets: 3 },
+    { name: 'Svend Press', icon: '🙌', group: 'chest', defaultWeight: 10, defaultReps: 15, defaultSets: 3 },
+
     // Back
-    { name: 'Barbell Row', icon: '🚣', group: 'back', defaultWeight: 50, defaultReps: 8, defaultSets: 3 },
-    { name: 'Lat Pulldown', icon: '⬇️', group: 'back', defaultWeight: 45, defaultReps: 10, defaultSets: 3 },
-    { name: 'Pull-ups', icon: '💪', group: 'back', defaultWeight: 0, defaultReps: 8, defaultSets: 3 },
     { name: 'Deadlift', icon: '💀', group: 'back', defaultWeight: 100, defaultReps: 5, defaultSets: 3 },
-    { name: 'Romanian Deadlift', icon: '🏋️', group: 'back', defaultWeight: 60, defaultReps: 10, defaultSets: 3 },
+    { name: 'Romanian Deadlift (RDL)', icon: '🏋️', group: 'back', defaultWeight: 60, defaultReps: 10, defaultSets: 3 },
+    { name: 'Pull-ups', icon: '💪', group: 'back', defaultWeight: 0, defaultReps: 8, defaultSets: 3 },
+    { name: 'Weighted Pull-ups', icon: '⛓️', group: 'back', defaultWeight: 10, defaultReps: 5, defaultSets: 3 },
+    { name: 'Chin-ups', icon: '✊', group: 'back', defaultWeight: 0, defaultReps: 8, defaultSets: 3 },
+    { name: 'Lat Pulldown (Wide bar)', icon: '⬇️', group: 'back', defaultWeight: 45, defaultReps: 10, defaultSets: 3 },
+    { name: 'Lat Pulldown (Close grip)', icon: '👐', group: 'back', defaultWeight: 45, defaultReps: 10, defaultSets: 3 },
+    { name: 'Barbell Row', icon: '🚣', group: 'back', defaultWeight: 50, defaultReps: 8, defaultSets: 3 },
+    { name: 'Dumbbell Row', icon: '🛶', group: 'back', defaultWeight: 22, defaultReps: 10, defaultSets: 3 },
+    { name: 'T-Bar Row', icon: '🛤️', group: 'back', defaultWeight: 40, defaultReps: 10, defaultSets: 3 },
+    { name: 'Pendlay Row', icon: '💥', group: 'back', defaultWeight: 50, defaultReps: 8, defaultSets: 3 },
+    { name: 'Seated Cable Row', icon: '🚣‍♂️', group: 'back', defaultWeight: 40, defaultReps: 12, defaultSets: 3 },
+    { name: 'Straight Arm Pulldown', icon: '📏', group: 'back', defaultWeight: 20, defaultReps: 15, defaultSets: 3 },
+    { name: 'Good Mornings', icon: '☀️', group: 'back', defaultWeight: 40, defaultReps: 10, defaultSets: 3 },
+    { name: 'Back Extension (Hyperextension)', icon: '🔙', group: 'back', defaultWeight: 0, defaultReps: 15, defaultSets: 3 },
+    { name: 'Barbell Shrugs', icon: '🤷', group: 'back', defaultWeight: 60, defaultReps: 15, defaultSets: 3 },
+    { name: 'Dumbbell Shrugs', icon: '🤷‍♂️', group: 'back', defaultWeight: 26, defaultReps: 15, defaultSets: 3 },
+
     // Leg
-    { name: 'Squat', icon: '🦵', group: 'leg', defaultWeight: 80, defaultReps: 8, defaultSets: 4 },
+    { name: 'Barbell Back Squat', icon: '🦵', group: 'leg', defaultWeight: 80, defaultReps: 8, defaultSets: 4 },
+    { name: 'Front Squat', icon: '🦵', group: 'leg', defaultWeight: 60, defaultReps: 8, defaultSets: 3 },
+    { name: 'Goblet Squat', icon: '🍷', group: 'leg', defaultWeight: 24, defaultReps: 12, defaultSets: 3 },
     { name: 'Leg Press', icon: '🦿', group: 'leg', defaultWeight: 120, defaultReps: 10, defaultSets: 3 },
-    { name: 'Lunges', icon: '🚶', group: 'leg', defaultWeight: 20, defaultReps: 10, defaultSets: 3 },
-    { name: 'Calf Raise', icon: '🦶', group: 'leg', defaultWeight: 40, defaultReps: 15, defaultSets: 3 },
-    { name: 'Hip Thrust', icon: '🍑', group: 'leg', defaultWeight: 60, defaultReps: 10, defaultSets: 3 },
-    // Bicep
+    { name: 'Hack Squat', icon: '🎢', group: 'leg', defaultWeight: 80, defaultReps: 10, defaultSets: 3 },
+    { name: 'Bulgarian Split Squat', icon: '🇧🇬', group: 'leg', defaultWeight: 16, defaultReps: 10, defaultSets: 3 },
+    { name: 'Walking Lunges', icon: '🚶‍♀️', group: 'leg', defaultWeight: 12, defaultReps: 12, defaultSets: 3 },
+    { name: 'Reverse Lunges', icon: '⏪', group: 'leg', defaultWeight: 16, defaultReps: 10, defaultSets: 3 },
+    { name: 'Leg Extension', icon: '💺', group: 'leg', defaultWeight: 40, defaultReps: 15, defaultSets: 3 },
+    { name: 'Lying Leg Curl', icon: '🛏️', group: 'leg', defaultWeight: 35, defaultReps: 12, defaultSets: 3 },
+    { name: 'Seated Leg Curl', icon: '🪑', group: 'leg', defaultWeight: 40, defaultReps: 12, defaultSets: 3 },
+    { name: 'Barbell Hip Thrust', icon: '🍑', group: 'leg', defaultWeight: 60, defaultReps: 10, defaultSets: 3 },
+    { name: 'Glute Bridge', icon: '🌉', group: 'leg', defaultWeight: 0, defaultReps: 15, defaultSets: 3 },
+    { name: 'Standing Calf Raise', icon: '🦶', group: 'leg', defaultWeight: 40, defaultReps: 15, defaultSets: 3 },
+    { name: 'Seated Calf Raise', icon: '🪑', group: 'leg', defaultWeight: 30, defaultReps: 15, defaultSets: 3 },
+    { name: 'Hip Abductor Machine', icon: '↔️', group: 'leg', defaultWeight: 35, defaultReps: 15, defaultSets: 3 },
+    { name: 'Hip Adductor Machine', icon: '➡️', group: 'leg', defaultWeight: 35, defaultReps: 15, defaultSets: 3 },
+
+    // Biceps
+    { name: 'Standing Barbell Curl', icon: '🏋️', group: 'bicep', defaultWeight: 20, defaultReps: 10, defaultSets: 3 },
+    { name: 'EZ Bar Curl', icon: '〰️', group: 'bicep', defaultWeight: 20, defaultReps: 10, defaultSets: 3 },
     { name: 'Dumbbell Curl', icon: '💪', group: 'bicep', defaultWeight: 12, defaultReps: 10, defaultSets: 3 },
     { name: 'Hammer Curl', icon: '🔨', group: 'bicep', defaultWeight: 10, defaultReps: 10, defaultSets: 3 },
-    { name: 'Barbell Curl', icon: '🏋️', group: 'bicep', defaultWeight: 20, defaultReps: 10, defaultSets: 3 },
-    // Tricep
-    { name: 'Tricep Extension', icon: '🦾', group: 'tricep', defaultWeight: 15, defaultReps: 10, defaultSets: 3 },
-    { name: 'Skull Crushers', icon: '💀', group: 'tricep', defaultWeight: 20, defaultReps: 10, defaultSets: 3 },
-    { name: 'Tricep Pushdown', icon: '⬇️', group: 'tricep', defaultWeight: 25, defaultReps: 12, defaultSets: 3 },
-    // Shoulder
-    { name: 'Overhead Press', icon: '🙆', group: 'shoulder', defaultWeight: 40, defaultReps: 8, defaultSets: 3 },
-    { name: 'Lateral Raise', icon: '🤸', group: 'shoulder', defaultWeight: 8, defaultReps: 12, defaultSets: 3 },
-    { name: 'Face Pull', icon: '🎯', group: 'shoulder', defaultWeight: 15, defaultReps: 15, defaultSets: 3 },
-    { name: 'Front Raise', icon: '🙌', group: 'shoulder', defaultWeight: 8, defaultReps: 12, defaultSets: 3 },
-    { name: 'Plank', icon: '🧘', group: 'shoulder', defaultWeight: 0, defaultReps: 1, defaultSets: 3 },
+    { name: 'Preacher Curl', icon: '🛐', group: 'bicep', defaultWeight: 15, defaultReps: 10, defaultSets: 3 },
+    { name: 'Incline Dumbbell Curl', icon: '📐', group: 'bicep', defaultWeight: 10, defaultReps: 12, defaultSets: 3 },
+    { name: 'Concentration Curl', icon: '🤔', group: 'bicep', defaultWeight: 10, defaultReps: 12, defaultSets: 3 },
+    { name: 'Cable Bicep Curl', icon: '⚡', group: 'bicep', defaultWeight: 20, defaultReps: 12, defaultSets: 3 },
+    { name: 'Reverse Barbell Curl', icon: '🔄', group: 'bicep', defaultWeight: 15, defaultReps: 12, defaultSets: 3 },
+    { name: 'Zottman Curl', icon: '🎭', group: 'bicep', defaultWeight: 10, defaultReps: 10, defaultSets: 3 },
+
+    // Triceps
+    { name: 'Tricep Rope Pushdown', icon: '⬇️', group: 'tricep', defaultWeight: 20, defaultReps: 12, defaultSets: 3 },
+    { name: 'Straight Bar Pushdown', icon: '➖', group: 'tricep', defaultWeight: 25, defaultReps: 12, defaultSets: 3 },
+    { name: 'Skull Crushers (EZ Bar)', icon: '💀', group: 'tricep', defaultWeight: 20, defaultReps: 10, defaultSets: 3 },
+    { name: 'Close-Grip Bench Press', icon: '👐', group: 'tricep', defaultWeight: 50, defaultReps: 8, defaultSets: 3 },
+    { name: 'Overhead Dumbbell Extension', icon: '🙆', group: 'tricep', defaultWeight: 16, defaultReps: 10, defaultSets: 3 },
+    { name: 'Dumbbell Kickback', icon: '🥾', group: 'tricep', defaultWeight: 8, defaultReps: 12, defaultSets: 3 },
+    { name: 'Tricep Dips (Bench)', icon: '🪑', group: 'tricep', defaultWeight: 0, defaultReps: 15, defaultSets: 3 },
+    { name: 'Parallel Bar Tricep Dips', icon: '🟰', group: 'tricep', defaultWeight: 0, defaultReps: 10, defaultSets: 3 },
+    { name: 'Cable Overhead Extension', icon: '⚡', group: 'tricep', defaultWeight: 15, defaultReps: 12, defaultSets: 3 },
+
+    // Shoulders
+    { name: 'Overhead Barbell Press', icon: '🙆‍♂️', group: 'shoulder', defaultWeight: 40, defaultReps: 8, defaultSets: 3 },
+    { name: 'Dumbbell Shoulder Press', icon: '🏋️‍♂️', group: 'shoulder', defaultWeight: 16, defaultReps: 10, defaultSets: 3 },
+    { name: 'Arnold Press', icon: '💪🤖', group: 'shoulder', defaultWeight: 14, defaultReps: 10, defaultSets: 3 },
+    { name: 'Dumbbell Lateral Raise', icon: '🤸', group: 'shoulder', defaultWeight: 8, defaultReps: 12, defaultSets: 3 },
+    { name: 'Cable Lateral Raise', icon: '⚡', group: 'shoulder', defaultWeight: 5, defaultReps: 15, defaultSets: 3 },
+    { name: 'Dumbbell Front Raise', icon: '🙌', group: 'shoulder', defaultWeight: 8, defaultReps: 12, defaultSets: 3 },
+    { name: 'Cable Front Raise', icon: '⬆️', group: 'shoulder', defaultWeight: 10, defaultReps: 12, defaultSets: 3 },
+    { name: 'Face Pulls', icon: '🎯', group: 'shoulder', defaultWeight: 15, defaultReps: 15, defaultSets: 3 },
+    { name: 'Reverse Pec Deck / Rear Delt Fly', icon: '🔙', group: 'shoulder', defaultWeight: 25, defaultReps: 15, defaultSets: 3 },
+    { name: 'Upright Row', icon: '⬆️', group: 'shoulder', defaultWeight: 20, defaultReps: 12, defaultSets: 3 },
+    { name: 'Push Press', icon: '🚀', group: 'shoulder', defaultWeight: 50, defaultReps: 6, defaultSets: 3 },
+
+    // Core
+    { name: 'Plank', icon: '🧱', group: 'core', defaultWeight: 0, defaultReps: 1, defaultSets: 3 },
+    { name: 'Weighted Plank', icon: '🎒', group: 'core', defaultWeight: 10, defaultReps: 1, defaultSets: 3 },
+    { name: 'Crunches', icon: '🤏', group: 'core', defaultWeight: 0, defaultReps: 20, defaultSets: 3 },
+    { name: 'Sit-ups', icon: '🪑', group: 'core', defaultWeight: 0, defaultReps: 20, defaultSets: 3 },
+    { name: 'Decline Sit-ups', icon: '↘️', group: 'core', defaultWeight: 0, defaultReps: 15, defaultSets: 3 },
+    { name: 'Russian Twists', icon: '🪆', group: 'core', defaultWeight: 10, defaultReps: 20, defaultSets: 3 },
+    { name: 'Leg Raises', icon: '🦵', group: 'core', defaultWeight: 0, defaultReps: 15, defaultSets: 3 },
+    { name: 'Hanging Leg Raises', icon: '🐒', group: 'core', defaultWeight: 0, defaultReps: 10, defaultSets: 3 },
+    { name: 'Ab Wheel Rollout', icon: '🛞', group: 'core', defaultWeight: 0, defaultReps: 10, defaultSets: 3 },
+    { name: 'Bicycle Crunches', icon: '🚲', group: 'core', defaultWeight: 0, defaultReps: 20, defaultSets: 3 },
+    { name: 'Cable Woodchoppers', icon: '🪓', group: 'core', defaultWeight: 15, defaultReps: 12, defaultSets: 3 },
+    { name: 'Dead Bug', icon: '🐞', group: 'core', defaultWeight: 0, defaultReps: 12, defaultSets: 3 },
+    { name: 'Suitcase Carry', icon: '🧳', group: 'core', defaultWeight: 20, defaultReps: 2, defaultSets: 3 },
+
+    // Cardio
+    { name: 'Treadmill Run', icon: '🏃', group: 'cardio', defaultWeight: 0, defaultReps: 1, defaultSets: 1 },
+    { name: 'Cycling', icon: '🚴', group: 'cardio', defaultWeight: 0, defaultReps: 1, defaultSets: 1 },
+    { name: 'Rowing Machine', icon: '🚣', group: 'cardio', defaultWeight: 0, defaultReps: 1, defaultSets: 1 },
+    { name: 'Stairmaster', icon: '🪜', group: 'cardio', defaultWeight: 0, defaultReps: 1, defaultSets: 1 },
+    { name: 'Jump Rope', icon: '➰', group: 'cardio', defaultWeight: 0, defaultReps: 1, defaultSets: 1 },
+    { name: 'Elliptical', icon: '⚙️', group: 'cardio', defaultWeight: 0, defaultReps: 1, defaultSets: 1 },
+    { name: 'Sprinting', icon: '💨', group: 'cardio', defaultWeight: 0, defaultReps: 1, defaultSets: 5 },
+    { name: 'Burpees', icon: '🔥', group: 'cardio', defaultWeight: 0, defaultReps: 15, defaultSets: 3 },
+    { name: 'Jumping Jacks', icon: '⭐', group: 'cardio', defaultWeight: 0, defaultReps: 50, defaultSets: 3 },
 ];
 
 // ===== STATE =====
 let todayExercises = [];
 let allWorkouts = [];
 let favoriteNames = [];
+let customExercises = [];
+let userRoutines = [];
 let personalRecords = {};
 let calendarDate = new Date();
 let timerInterval = null;
@@ -74,11 +159,31 @@ document.addEventListener('DOMContentLoaded', () => {
     updateHistoryView();
     updateCalendarView();
     populateExerciseSuggestions();
+    setupRoutinesUI();
 
     // Start session timer when first exercise is logged
     if (todayExercises.length > 0 && !sessionStartTime) {
         sessionStartTime = Date.now();
     }
+
+    // Register Service Worker for Offline PWA
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('ServiceWorker registered:', reg.scope))
+                .catch(err => console.log('ServiceWorker registration failed:', err));
+        });
+    }
+
+    // Handle Online/Offline Status
+    window.addEventListener('online', () => {
+        showToast('You are back online! Syncing data...', 'success');
+        if (isLoggedIn) syncLocalToCloud();
+    });
+
+    window.addEventListener('offline', () => {
+        showToast('You are offline. Workouts will be saved locally.', 'error');
+    });
 
     // Firebase Auth listener
     auth.onAuthStateChanged(async (user) => {
@@ -100,15 +205,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem(FAVORITES_KEY, JSON.stringify(favoriteNames));
             }
 
+            const cloudCustom = await loadCustomExercisesFromCloud();
+            if (cloudCustom !== null) {
+                customExercises = cloudCustom;
+                localStorage.setItem('fitpulse_custom', JSON.stringify(customExercises));
+            }
+
             const cloudRecords = await loadPersonalRecords();
             if (cloudRecords !== null) {
                 personalRecords = cloudRecords;
+            }
+
+            const cloudRoutines = await loadRoutinesFromCloud();
+            if (cloudRoutines !== null) {
+                userRoutines = cloudRoutines;
+                localStorage.setItem('fitpulse_routines', JSON.stringify(userRoutines));
             }
         } else {
             loadData();
         }
 
         renderChips();
+        renderRoutines();
         renderWeekTracker();
         updateTodayView();
         updateHistoryView();
@@ -151,7 +269,7 @@ function updateAccountUI(user) {
         document.getElementById('user-email').textContent = user.email || '';
         document.getElementById('user-photo').src = user.photoURL || '';
         if (user.photoURL) {
-            avatarEl.innerHTML = `<img src="${user.photoURL}" alt="${user.displayName}">`;
+            avatarEl.innerHTML = `<img src="${user.photoURL}" alt="${user.displayName}" referrerpolicy="no-referrer">`;
         }
     } else {
         loggedOut.style.display = 'block';
@@ -166,10 +284,14 @@ function loadData() {
         allWorkouts = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         todayExercises = JSON.parse(localStorage.getItem(TODAY_KEY)) || [];
         favoriteNames = JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
+        customExercises = JSON.parse(localStorage.getItem('fitpulse_custom')) || [];
+        userRoutines = JSON.parse(localStorage.getItem('fitpulse_routines')) || [];
     } catch {
         allWorkouts = [];
         todayExercises = [];
         favoriteNames = [];
+        customExercises = [];
+        userRoutines = [];
     }
 }
 
@@ -272,20 +394,38 @@ function setupFilterTabs() {
 
 // ===== WORKOUT SELECTOR =====
 function setupWorkoutSelector() {
+    const searchInput = document.getElementById('exercise-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            renderChips();
+        });
+    }
     renderChips();
 }
 
+// ===== WORKOUT CHIPS =====
 function renderChips() {
     const chipsContainer = document.getElementById('workout-chips');
+    if (!chipsContainer) return;
+    
+    const searchInput = document.getElementById('exercise-search');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
     chipsContainer.innerHTML = '';
+
+    const combinedExercises = [...WORKOUT_PRESETS, ...customExercises];
 
     let filtered;
     if (activeGroup === 'favorites') {
-        filtered = WORKOUT_PRESETS.filter(p => isFavorite(p.name));
+        filtered = combinedExercises.filter(p => isFavorite(p.name));
     } else if (activeGroup === 'all') {
-        filtered = WORKOUT_PRESETS;
+        filtered = combinedExercises;
     } else {
-        filtered = WORKOUT_PRESETS.filter(p => p.group === activeGroup);
+        filtered = combinedExercises.filter(p => p.group === activeGroup);
+    }
+
+    if (searchTerm) {
+        filtered = filtered.filter(p => p.name.toLowerCase().includes(searchTerm));
     }
 
     if (filtered.length === 0) {
@@ -294,7 +434,10 @@ function renderChips() {
     }
 
     filtered.forEach((preset) => {
-        const index = WORKOUT_PRESETS.indexOf(preset);
+        // Find the original index in WORKOUT_PRESETS or assign a unique ID for custom exercises
+        const originalIndex = WORKOUT_PRESETS.findIndex(p => p.name === preset.name);
+        const index = originalIndex !== -1 ? originalIndex : `custom-${preset.id}`; // Use a string for custom IDs
+
         const fav = isFavorite(preset.name);
         const chip = document.createElement('button');
         chip.type = 'button';
@@ -302,10 +445,10 @@ function renderChips() {
         if (selectedPreset === index) chip.classList.add('active');
 
         chip.innerHTML = `
-            <span class="workout-chip-icon">${preset.icon}</span>
+            <span class="workout-chip-icon">${preset.icon || '✨'}</span>
             <span>${preset.name}</span>
-            <span class="chip-fav ${fav ? 'is-fav' : ''}" 
-                  onclick="event.stopPropagation(); toggleFavorite('${preset.name}', '${preset.icon}', '${preset.group}')"
+            <span class="chip-fav ${fav ? 'is-fav' : ''}"
+                  onclick="event.stopPropagation(); toggleFavorite('${preset.name}', '${preset.icon || '✨'}', '${preset.group || 'other'}')"
                   title="${fav ? 'Remove from favorites' : 'Add to favorites'}">
                 ${fav ? '★' : '☆'}
             </span>
@@ -316,7 +459,13 @@ function renderChips() {
 }
 
 function selectPreset(index, chipEl) {
-    const preset = WORKOUT_PRESETS[index];
+    let preset;
+    if (typeof index === 'number') { // It's a WORKOUT_PRESET
+        preset = WORKOUT_PRESETS[index];
+    } else { // It's a custom exercise
+        const customId = parseInt(index.split('-')[1]);
+        preset = customExercises.find(c => c.id === customId);
+    }
 
     document.querySelectorAll('.workout-chip').forEach(c => c.classList.remove('active'));
 
@@ -364,6 +513,7 @@ function setupNavigation() {
                 renderWeekTracker();
             }
             if (viewName === 'calendar') updateCalendarView();
+            if (viewName === 'trophy') updateTrophyView();
             if (viewName === 'workout') renderWeekTracker();
         });
     });
@@ -371,19 +521,39 @@ function setupNavigation() {
 
 // ===== WORKOUT FORM =====
 function setupWorkoutForm() {
-    const form = document.getElementById('workout-form');
+    const workoutForm = document.getElementById('workout-form');
+
     const finishBtn = document.getElementById('finish-workout-btn');
 
-    form.addEventListener('submit', (e) => {
+    workoutForm.addEventListener('submit', (e) => {
         e.preventDefault();
 
+        const nameInput = document.getElementById('exercise-name').value.trim();
+        const weightInput = parseFloat(document.getElementById('exercise-weight').value);
+        const repsInput = parseInt(document.getElementById('exercise-reps').value);
+        const setsInput = parseInt(document.getElementById('exercise-sets').value);
+        const notesInput = document.getElementById('exercise-notes').value.trim();
+
+        // Check for Custom Exercise Auto-Save
+        const isPreset = WORKOUT_PRESETS.find(p => p.name.toLowerCase() === nameInput.toLowerCase());
+        const isCustom = customExercises.find(c => c.name.toLowerCase() === nameInput.toLowerCase());
+
+        if (!isPreset && !isCustom && nameInput) { // Only add if name is not empty
+            const newCustom = { id: Date.now(), name: nameInput, group: 'other', icon: '✨' };
+            customExercises.push(newCustom);
+            localStorage.setItem('fitpulse_custom', JSON.stringify(customExercises));
+            if (isLoggedIn) addCustomExerciseToCloud(newCustom);
+            renderChips(); // Update UI so it appears immediately
+            populateExerciseSuggestions(); 
+        }
+
         const exercise = {
-            id: Date.now(),
-            name: document.getElementById('exercise-name').value.trim(),
-            weight: parseFloat(document.getElementById('exercise-weight').value),
-            reps: parseInt(document.getElementById('exercise-reps').value),
-            sets: parseInt(document.getElementById('exercise-sets').value),
-            notes: document.getElementById('exercise-notes').value.trim(),
+            id: Date.now() + 1, // ensure distinct ID if custom was just saved
+            name: nameInput,
+            weight: weightInput,
+            reps: repsInput,
+            sets: setsInput,
+            notes: notesInput,
         };
 
         // Track session start
@@ -400,6 +570,21 @@ function setupWorkoutForm() {
     });
 
     finishBtn.addEventListener('click', finishWorkout);
+}
+
+function populateExerciseSuggestions() {
+    const dataList = document.getElementById('exercise-suggestions');
+    if (!dataList) return;
+    
+    dataList.innerHTML = '';
+    const combinedExercises = [...WORKOUT_PRESETS, ...customExercises];
+    
+    // Sort alphabetically for the dropdown
+    combinedExercises.sort((a, b) => a.name.localeCompare(b.name)).forEach(ex => {
+        const option = document.createElement('option');
+        option.value = ex.name;
+        dataList.appendChild(option);
+    });
 }
 
 function finishWorkout() {
@@ -479,18 +664,18 @@ function deleteExercise(id) {
 function updateTodayView() {
     const list = document.getElementById('exercise-list');
     const countBadge = document.getElementById('exercise-count');
-    const finishBtn = document.getElementById('finish-workout-btn');
+    const sessionActions = document.getElementById('session-actions');
 
     if (todayExercises.length === 0) {
         list.innerHTML = '';
         list.appendChild(createEmptyState('🏃', 'No exercises logged today. Start your workout!'));
-        finishBtn.style.display = 'none';
+        if (sessionActions) sessionActions.style.display = 'none';
         countBadge.textContent = '0 exercises';
         return;
     }
 
     countBadge.textContent = `${todayExercises.length} exercise${todayExercises.length !== 1 ? 's' : ''}`;
-    finishBtn.style.display = 'flex';
+    if (sessionActions) sessionActions.style.display = 'flex';
 
     // Calculate running total volume
     const runningVolume = todayExercises.reduce((sum, ex) => sum + (ex.weight * ex.reps * ex.sets), 0);
@@ -509,6 +694,120 @@ function updateTodayView() {
             <button class="exercise-delete" onclick="deleteExercise(${ex.id})" title="Remove">🗑️</button>
         </div>
     `).join('');
+}
+
+// ===== ROUTINES =====
+function setupRoutinesUI() {
+    const saveBtn = document.getElementById('save-routine-btn');
+    const modal = document.getElementById('routine-modal');
+    const closeBtn = document.getElementById('routine-close');
+    const confirmBtn = document.getElementById('btn-confirm-routine');
+    const nameInput = document.getElementById('routine-name');
+
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            if (todayExercises.length === 0) {
+                return showToast('No exercises to save!', 'error');
+            }
+            modal.style.display = 'flex';
+            nameInput.value = '';
+            nameInput.focus();
+        });
+    }
+
+    if (closeBtn) closeBtn.addEventListener('click', () => modal.style.display = 'none');
+    
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', async () => {
+            const name = nameInput.value.trim();
+            if (!name) return showToast('Please enter a name', 'error');
+
+            const routine = {
+                id: Date.now(),
+                name: name,
+                exercises: todayExercises.map(ex => ({
+                    name: ex.name,
+                    weight: ex.weight,
+                    reps: ex.reps,
+                    sets: ex.sets
+                }))
+            };
+
+            userRoutines.push(routine);
+            localStorage.setItem('fitpulse_routines', JSON.stringify(userRoutines));
+            if (isLoggedIn) {
+                await saveRoutineToCloud(routine);
+            }
+            
+            modal.style.display = 'none';
+            renderRoutines();
+            showToast('Routine saved! ✨', 'success');
+        });
+    }
+}
+
+function renderRoutines() {
+    const section = document.getElementById('routines-section');
+    const list = document.getElementById('routines-list');
+    
+    if (!section || !list) return;
+
+    if (userRoutines.length === 0) {
+        section.style.display = 'none';
+        return;
+    }
+
+    section.style.display = 'block';
+    list.innerHTML = '';
+
+    userRoutines.forEach(r => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'workout-chip';
+        chip.innerHTML = `
+            <span class="workout-chip-icon">📋</span>
+            <span>${escapeHtml(r.name)}</span>
+            <span class="chip-fav" onclick="event.stopPropagation(); deleteRoutine(${r.id})" title="Delete Routine">🗑️</span>
+        `;
+        chip.addEventListener('click', () => loadRoutine(r));
+        list.appendChild(chip);
+    });
+}
+
+function loadRoutine(routine) {
+    if (todayExercises.length > 0) {
+        if (!confirm('This will add the routine exercises to your current session. Continue?')) {
+            return;
+        }
+    }
+    
+    if (todayExercises.length === 0) {
+        sessionStartTime = Date.now();
+    }
+
+    const newExs = routine.exercises.map((ex, i) => ({
+        ...ex,
+        id: Date.now() + i
+    }));
+
+    todayExercises.push(...newExs);
+    saveTodayExercises();
+    updateTodayView();
+    showToast(`${routine.name} loaded!`, 'success');
+}
+
+async function deleteRoutine(id) {
+    if (!confirm('Delete this routine?')) return;
+    
+    userRoutines = userRoutines.filter(r => r.id !== id);
+    localStorage.setItem('fitpulse_routines', JSON.stringify(userRoutines));
+    
+    if (isLoggedIn) {
+        await deleteRoutineFromCloud(id);
+    }
+    
+    renderRoutines();
+    showToast('Routine deleted', 'success');
 }
 
 // ===== IG STORY FLEX EXPORTER =====
@@ -1113,6 +1412,88 @@ function playTimerBeep() {
             osc.stop(audioCtx.currentTime + delay + 0.15);
         });
     } catch (e) { }
+}
+
+// ===== TROPHY ROOM & ACHIEVEMENTS =====
+function updateTrophyView() {
+    // 1. The Big 3 PRs
+    let bestBench = 0;
+    let bestSquat = 0;
+    let bestDeadlift = 0;
+
+    // Scan all workouts for true PRs (even if not saved in personalRecords yet)
+    allWorkouts.forEach(workout => {
+        workout.exercises.forEach(ex => {
+            const lowerName = ex.name.toLowerCase();
+            if (lowerName.includes('bench press') && ex.weight > bestBench) bestBench = ex.weight;
+            if (lowerName.includes('squat') && !lowerName.includes('split') && ex.weight > bestSquat) bestSquat = ex.weight;
+            if (lowerName.includes('deadlift') && ex.weight > bestDeadlift) bestDeadlift = ex.weight;
+        });
+    });
+
+    // Or fallback to personalRecords object if it exists
+    if (personalRecords['Barbell Bench Press'] > bestBench) bestBench = personalRecords['Barbell Bench Press'];
+    if (personalRecords['Barbell Back Squat'] > bestSquat) bestSquat = personalRecords['Barbell Back Squat'];
+    if (personalRecords['Deadlift'] > bestDeadlift) bestDeadlift = personalRecords['Deadlift'];
+
+    document.getElementById('pr-val-bench').textContent = bestBench > 0 ? `${bestBench} kg` : '-- kg';
+    document.getElementById('pr-val-squat').textContent = bestSquat > 0 ? `${bestSquat} kg` : '-- kg';
+    document.getElementById('pr-val-deadlift').textContent = bestDeadlift > 0 ? `${bestDeadlift} kg` : '-- kg';
+
+    // 2. Achievement Badges Computation
+    let totalVolumeEver = 0;
+    let hasNightWorkout = false;
+    let highestTotalRepsInOneSession = 0;
+    
+    // Compute total volume & check timestamps
+    allWorkouts.forEach(workout => {
+        let sessionVolume = 0;
+        let sessionReps = 0;
+        workout.exercises.forEach(ex => {
+            sessionVolume += (ex.weight * ex.reps * ex.sets);
+            sessionReps += (ex.reps * ex.sets);
+        });
+        totalVolumeEver += sessionVolume;
+        if (sessionReps > highestTotalRepsInOneSession) highestTotalRepsInOneSession = sessionReps;
+
+        // Night workout check (after 8 PM)
+        const workoutHour = new Date(workout.timestamp).getHours();
+        if (workoutHour >= 20 || workoutHour <= 4) {
+            hasNightWorkout = true;
+        }
+    });
+
+    const is10kClub = totalVolumeEver >= 10000;
+    const is3DayWarrior = calculateStreak() >= 3;
+    const is100RepClub = highestTotalRepsInOneSession >= 100;
+
+    const badges = [
+        {
+            id: 'vol-10k', title: '10K Volume Club', desc: 'Lifted over 10,000 kg total', icon: '🐘', unlocked: is10kClub 
+        },
+        {
+            id: 'warrior-3d', title: '3-Day Warrior', desc: 'Hit a 3-day workout streak', icon: '🔥', unlocked: is3DayWarrior 
+        },
+        {
+            id: 'night-owl', title: 'Night Owl Lifter', desc: 'Logged a workout after 8 PM', icon: '🦉', unlocked: hasNightWorkout 
+        },
+        {
+            id: 'reps-100', title: '100-Rep Club', desc: 'Did 100+ total reps in one day', icon: '💯', unlocked: is100RepClub 
+        }
+    ];
+
+    const badgesContainer = document.getElementById('badges-container');
+    if (!badgesContainer) return;
+    
+    badgesContainer.innerHTML = badges.map(b => `
+        <div class="badge-card ${b.unlocked ? 'unlocked' : ''}">
+            <div class="badge-icon">${b.icon}</div>
+            <div class="badge-info">
+                <span class="badge-title">${b.title}</span>
+                <span class="badge-desc">${b.desc}</span>
+            </div>
+        </div>
+    `).join('');
 }
 
 // ===== EXERCISE SUGGESTIONS =====
