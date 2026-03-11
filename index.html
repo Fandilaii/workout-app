@@ -14,6 +14,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet" />
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -49,6 +50,14 @@
                 <button class="modal-close" id="modal-close">✕</button>
             </div>
             <div class="modal-body" id="modal-body">
+                <!-- Settings / Theme -->
+                <div class="settings-group" style="margin-bottom: var(--space-lg); display: flex; justify-content: space-between; align-items: center; padding-bottom: var(--space-md); border-bottom: 1px solid var(--border-color);">
+                    <div style="font-weight: 600; font-size: 0.95rem;">App Theme</div>
+                    <button id="theme-toggle" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; background: var(--bg-card); border: 1px solid var(--border-color);">
+                        <span id="theme-icon">☀️ Light</span>
+                    </button>
+                </div>
+
                 <!-- Logged out state -->
                 <div id="auth-logged-out">
                     <p class="modal-subtitle">Sign in to sync your workouts across devices</p>
@@ -128,19 +137,19 @@
         </div>
         <div class="nav-links">
             <button class="nav-btn active" data-view="workout" id="nav-workout">
-                <span class="nav-icon">💪</span>
+                <span class="nav-icon material-symbols-rounded">fitness_center</span>
             </button>
             <button class="nav-btn" data-view="history" id="nav-history">
-                <span class="nav-icon">📋</span>
+                <span class="nav-icon material-symbols-rounded">history</span>
             </button>
             <button class="nav-btn" data-view="calendar" id="nav-calendar">
-                <span class="nav-icon">📅</span>
+                <span class="nav-icon material-symbols-rounded">calendar_month</span>
             </button>
             <button class="nav-btn" data-view="trophy" id="nav-trophy">
-                <span class="nav-icon">🏆</span>
+                <span class="nav-icon material-symbols-rounded">emoji_events</span>
             </button>
             <button class="nav-btn" data-view="timer" id="nav-timer">
-                <span class="nav-icon">⏱️</span>
+                <span class="nav-icon material-symbols-rounded">timer</span>
             </button>
         </div>
     </nav>
@@ -158,11 +167,10 @@
             </div>
 
             <form class="workout-form card" id="workout-form">
-                <div class="form-group">
+                <div class="form-group" style="position: relative;">
                     <label for="exercise-name">Exercise Name</label>
-                    <input type="text" id="exercise-name" placeholder="e.g. Bench Press, Squat, Deadlift..." required
-                        autocomplete="off" list="exercise-suggestions">
-                    <datalist id="exercise-suggestions"></datalist>
+                    <input type="text" id="exercise-name" placeholder="e.g. Bench Press, Squat, Deadlift..." required autocomplete="off">
+                    <div id="exercise-dropdown" class="autocomplete-dropdown" style="display: none;"></div>
                 </div>
 
                 <div class="form-row">

@@ -158,8 +158,9 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTodayView();
     updateHistoryView();
     updateCalendarView();
-    populateExerciseSuggestions();
+    setupExerciseAutocomplete();
     setupRoutinesUI();
+    setupThemeToggle();
 
     // Start session timer when first exercise is logged
     if (todayExercises.length > 0 && !sessionStartTime) {
@@ -233,6 +234,36 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCalendarView();
     });
 });
+
+// ===== THEME TOGGLE =====
+// Apply saved theme immediately on load
+const lsTheme = localStorage.getItem('fitpulse_theme') || 'light';
+if (lsTheme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+
+function setupThemeToggle() {
+    const toggleBtn = document.getElementById('theme-toggle');
+    const iconSpan = document.getElementById('theme-icon');
+    
+    const updateBtnUI = () => {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (iconSpan) iconSpan.textContent = isDark ? '🌙 Dark' : '☀️ Light';
+    };
+    updateBtnUI();
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('fitpulse_theme', 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('fitpulse_theme', 'dark');
+            }
+            updateBtnUI();
+        });
+    }
+}
 
 // ===== ACCOUNT UI =====
 function setupAccountUI() {
@@ -544,7 +575,7 @@ function setupWorkoutForm() {
             localStorage.setItem('fitpulse_custom', JSON.stringify(customExercises));
             if (isLoggedIn) addCustomExerciseToCloud(newCustom);
             renderChips(); // Update UI so it appears immediately
-            populateExerciseSuggestions(); 
+            // Autocomplete pulls dynamically on focus, no need to manually repopulate here 
         }
 
         const exercise = {
@@ -572,18 +603,106 @@ function setupWorkoutForm() {
     finishBtn.addEventListener('click', finishWorkout);
 }
 
-function populateExerciseSuggestions() {
-    const dataList = document.getElementById('exercise-suggestions');
-    if (!dataList) return;
-    
-    dataList.innerHTML = '';
-    const combinedExercises = [...WORKOUT_PRESETS, ...customExercises];
-    
-    // Sort alphabetically for the dropdown
-    combinedExercises.sort((a, b) => a.name.localeCompare(b.name)).forEach(ex => {
-        const option = document.createElement('option');
-        option.value = ex.name;
-        dataList.appendChild(option);
+function setupExerciseAutocomplete() {
+    const input = document.getElementById('exercise-name');
+    const dropdown = document.getElementById('exercise-dropdown');
+    if (!input || !dropdown) return;
+
+    let currentFocus = -1;
+
+    // Helper to get all available exercises
+    const getExercises = () => [...WORKOUT_PRESETS, ...customExercises]
+        .map(ex => ex.name)
+        .sort((a, b) => a.localeCompare(b));
+
+    // Render dropdown items
+    const renderOptions = (filterText = '') => {
+        const exercises = getExercises();
+        const filtered = filterText 
+            ? exercises.filter(e => e.toLowerCase().includes(filterText.toLowerCase()))
+            : exercises;
+
+        if (filtered.length === 0) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        dropdown.innerHTML = '';
+        filtered.forEach((exName) => {
+            const div = document.createElement('div');
+            div.className = 'autocomplete-item';
+            
+            // Determine icon: custom vs built-in
+            const isCustom = customExercises.some(c => c.name === exName);
+            const iconStr = isCustom ? '✨' : '💪';
+
+            div.innerHTML = `<span class="autocomplete-icon">${iconStr}</span><span>${exName}</span>`;
+            div.dataset.value = exName;
+            
+            div.addEventListener('click', (e) => {
+                input.value = exName;
+                dropdown.style.display = 'none';
+                document.getElementById('exercise-weight').focus(); // Auto-advance to next field
+            });
+            dropdown.appendChild(div);
+        });
+        
+        dropdown.style.display = 'block';
+        currentFocus = -1;
+    };
+
+    // Events
+    input.addEventListener('focus', () => {
+        renderOptions(input.value);
+    });
+
+    input.addEventListener('input', () => {
+        renderOptions(input.value);
+    });
+
+    input.addEventListener('keydown', (e) => {
+        const items = dropdown.querySelectorAll('.autocomplete-item');
+        if (!items.length || dropdown.style.display === 'none') {
+            // Allow normal form behavior if hidden
+            return; 
+        }
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            currentFocus++;
+            addActive(items);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            currentFocus--;
+            addActive(items);
+        } else if (e.key === 'Enter') {
+            if (currentFocus > -1) {
+                e.preventDefault(); // Prevent form submit if selecting from list
+                items[currentFocus].click();
+            }
+        } else if (e.key === 'Escape') {
+            dropdown.style.display = 'none';
+        }
+    });
+
+    function addActive(items) {
+        if (!items) return;
+        removeActive(items);
+        if (currentFocus >= items.length) currentFocus = 0;
+        if (currentFocus < 0) currentFocus = items.length - 1;
+        items[currentFocus].classList.add('active');
+        items[currentFocus].scrollIntoView({ block: 'nearest' });
+    }
+
+    function removeActive(items) {
+        items.forEach(item => item.classList.remove('active'));
+    }
+
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+        if (e.target !== input && e.target !== dropdown && !dropdown.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
     });
 }
 
