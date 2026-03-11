@@ -328,15 +328,18 @@ function setupAccountUI() {
     const signOutBtn = document.getElementById('btn-signout');
     const saveProfileBtn = document.getElementById('btn-save-profile');
 
-    accountBtn.addEventListener('click', async () => {
-        // Always refresh auth state when opening the modal
+    accountBtn.addEventListener('click', () => {
+        // Show modal instantly — never block the UI
         const currentUser = auth.currentUser;
         updateAccountUI(currentUser);
-        if (currentUser) {
-            const profile = await getUserProfile();
-            if (profile) populateHealthForm(profile);
-        }
         modal.style.display = 'flex';
+
+        // Fetch profile in background (non-blocking)
+        if (currentUser) {
+            getUserProfile().then(profile => {
+                if (profile) populateHealthForm(profile);
+            });
+        }
     });
     closeBtn.addEventListener('click', () => modal.style.display = 'none');
     modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
