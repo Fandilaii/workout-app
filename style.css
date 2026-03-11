@@ -93,6 +93,15 @@
     --nav-border: rgba(255, 255, 255, 0.05);
 }
 
+[data-theme="dark"] .nav-btn {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+[data-theme="dark"] .nav-btn:hover {
+    color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.05);
+}
+
 
 /* ===== Reset ===== */
 *,
@@ -456,7 +465,7 @@ body::before {
 .nav-btn {
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.3);
+    color: #6b7280;
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -471,8 +480,8 @@ body::before {
 }
 
 .nav-btn:hover {
-    color: rgba(255, 255, 255, 0.55);
-    background: rgba(255, 255, 255, 0.03);
+    color: #4b5563;
+    background: rgba(0, 0, 0, 0.04);
     transform: translateY(-1px);
 }
 
