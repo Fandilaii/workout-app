@@ -328,6 +328,26 @@ function setupAccountUI() {
     const googleBtn = document.getElementById('btn-google-signin');
     const signOutBtn = document.getElementById('btn-signout');
     const saveProfileBtn = document.getElementById('btn-save-profile');
+    const apiKeyInput = document.getElementById('claude-api-key');
+    const saveKeyBtn = document.getElementById('btn-save-key');
+
+    // Load saved API key
+    if (apiKeyInput) {
+        apiKeyInput.value = localStorage.getItem('fitpulse_claude_api_key') || '';
+    }
+
+    if (saveKeyBtn && apiKeyInput) {
+        saveKeyBtn.addEventListener('click', () => {
+            const keyVal = apiKeyInput.value.trim();
+            if (keyVal) {
+                localStorage.setItem('fitpulse_claude_api_key', keyVal);
+                showToast('Claude API Key saved locally! 🔑', 'success');
+            } else {
+                localStorage.removeItem('fitpulse_claude_api_key');
+                showToast('Claude API Key removed.', 'success');
+            }
+        });
+    }
 
     accountBtn.addEventListener('click', () => {
         // Show modal instantly — never block the UI
@@ -1925,10 +1945,12 @@ async function handleScanSubmit() {
 
     } catch (err) {
         console.error('Scanner error:', err);
-        if (err.message === 'timeout') {
+        if (err.message === 'missing_api_key') {
+            showToast('Please add your Claude API Key under Account 🔑', 'error');
+        } else if (err.message === 'timeout') {
             showToast('Scan timed out. Try again or log manually.', 'error');
         } else {
-            showToast('Scan failed. Please try again.', 'error');
+            showToast('Scan failed. Verify your API Key & network.', 'error');
         }
         setScannerStep(1);
         resetScanner();

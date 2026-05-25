@@ -58,6 +58,16 @@
                     </button>
                 </div>
 
+                <!-- Claude API Key (Local Storage) -->
+                <div class="settings-group" style="margin-bottom: var(--space-lg); padding-bottom: var(--space-md); border-bottom: 1px solid var(--border-color);">
+                    <label for="claude-api-key" style="font-weight: 600; font-size: 0.95rem; display: block; margin-bottom: 8px;">Claude API Key (Stored Locally)</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="password" id="claude-api-key" placeholder="sk-ant-..." style="flex: 1; padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-primary); outline: none; font-size: 0.85rem;">
+                        <button id="btn-save-key" class="btn btn-primary" style="padding: 10px 14px; font-size: 0.85rem; height: auto;">Save</button>
+                    </div>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 6px 0 0 0;">Used for local AI Set Scanner. Stored directly in browser localStorage.</p>
+                </div>
+
                 <!-- Logged out state -->
                 <div id="auth-logged-out">
                     <p class="modal-subtitle">Sign in to sync your workouts across devices</p>

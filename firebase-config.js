@@ -466,16 +466,120 @@ const loadWorkoutsFromCloud = loadSessionsFromCloud;
 const deleteWorkoutFromCloud = deleteSessionFromCloud;
 
 // =============================================
-//   AI SET SCANNER — Cloud Function Callable
+//   AI SET SCANNER — Client-Side Local Execution
 // =============================================
-const functions = firebase.functions();
-
 async function callIdentifyWorkout(photo1Base64, photo2Base64, imageHash) {
-    const identifyFn = functions.httpsCallable('identifyWorkoutSet');
-    const result = await identifyFn({
-        photo1: photo1Base64,
-        photo2: photo2Base64,
-        hash: imageHash,
-    });
-    return result.data;
+    const localApiKey = localStorage.getItem('fitpulse_claude_api_key');
+    if (!localApiKey) {
+        throw new Error('missing_api_key');
+    }
+
+    const systemPrompt = `You are a gym exercise identification assistant. Given two images:
+- Image 1: person performing an exercise
+- Image 2: the weight indicator (stack pin, dumbbell label, barbell plates)
+
+Return ONLY valid JSON — no markdown fences, no extra text:
+{
+  "exercise": "<standard gym exercise name>",
+  "weight_kg": <number, 0 if unreadable>,
+  "unit": "kg" | "lbs",
+  "confidence": <0.0-1.0>,
+  "notes": "<optional edge case note>"
 }
+If exercise unidentifiable: set exercise "" and confidence 0.`;
+
+    const makeRequest = async (modelName) => {
+        const requestBody = {
+            model: modelName,
+            max_tokens: 512,
+            system: systemPrompt,
+            messages: [
+                {
+                    role: "user",
+                    content: [
+                        {
+                            type: "image",
+                            source: {
+                                type: "base64",
+                                media_type: "image/webp",
+                                data: photo1Base64
+                            }
+                        },
+                        {
+                            type: "text",
+                            text: "Image 1: Exercise position"
+                        },
+                        {
+                            type: "image",
+                            source: {
+                                type: "base64",
+                                media_type: "image/webp",
+                                data: photo2Base64
+                            }
+                        },
+                        {
+                            type: "text",
+                            text: "Image 2: Weight indicator"
+                        }
+                    ]
+                }
+            ]
+        };
+
+        const targetUrl = "https://api.anthropic.com/v1/messages";
+        const proxyUrls = [
+            `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
+            `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`
+        ];
+
+        let lastError = null;
+        for (const proxyUrl of proxyUrls) {
+            try {
+                const response = await fetch(proxyUrl, {
+                    method: "POST",
+                    headers: {
+                        "x-api-key": localApiKey,
+                        "anthropic-version": "2023-06-01",
+                        "content-type": "application/json"
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(`API returned ${response.status}: ${text}`);
+                }
+
+                const data = await response.json();
+                const text = data.content[0]?.text || "";
+                const jsonMatch = text.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) {
+                    throw new Error("Invalid JSON in response: " + text);
+                }
+
+                const parsed = JSON.parse(jsonMatch[0]);
+                return {
+                    exercise: parsed.exercise || "",
+                    weight_kg: Number(parsed.weight_kg) || 0,
+                    unit: parsed.unit === "lbs" ? "lbs" : "kg",
+                    confidence: Math.max(0, Math.min(1, Number(parsed.confidence) || 0)),
+                    notes: parsed.notes || ""
+                };
+            } catch (e) {
+                console.warn(`Proxy failed: ${proxyUrl}`, e);
+                lastError = e;
+            }
+        }
+        throw lastError || new Error("All CORS proxies failed");
+    };
+
+    try {
+        // Try Claude 3.5 Haiku (cheaper and faster)
+        return await makeRequest("claude-3-5-haiku-20241022");
+    } catch (err) {
+        console.warn("Haiku failed, falling back to Claude 3.5 Sonnet...", err);
+        // Fallback to Claude 3.5 Sonnet
+        return await makeRequest("claude-3-5-sonnet-20241022");
+    }
+}
+
