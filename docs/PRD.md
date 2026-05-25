@@ -59,16 +59,24 @@ The Indonesian fitness market is highly social and rapidly growing, yet it is un
 *   **Web Share API:** Passes the rendered image directly to Instagram Stories or WhatsApp with native OS share sheets.
 *   **Branding:** Forces FitPulse watermarks on all shared images for organic growth.
 
+### 5.7 AI Set Scanner (Computer Vision Workout Identification)
+*   **Two-Photo Setup:** Users can snap two photos mid-set (Image 1: exercise position/form, Image 2: weight indicator such as plate configuration, dumbbell label, or pin stack).
+*   **AI Identification:** Leverages Anthropic Claude vision API via a secure backend proxy to auto-detect exercise type and weight.
+*   **Frictionless Pre-filling:** Auto-fills form values (Exercise Name and Weight) immediately on confirmation to eliminate logging friction.
+*   **Confidence UI & Override:** Displays confidence level (Green/Yellow/Red) and allows full override/edit before confirmation to prevent AI inaccuracy frustration.
+*   **Smart Multi-Layer Caching:** Integrates an in-memory session cache and Firestore scanCache with FNV-1a hashing to reduce repeat API calls, saving API costs and latency.
+
 ### 5.6 Theming & Accessibility
 *   **Light Mode Default:** High contrast, glare-resistant UI for well-lit open-air gyms.
 *   **Dark Mode Toggle:** A persistent user preference stored in `localStorage` for night sessions.
 
-## 6. Future Roadmap (Phase 5+)
+## 6. Future Roadmap (Phase 6+)
+*   **AI Weight Prediction (Phase 2):** Analyze historical sessions for an exercise and dynamically recommend weight progressions (e.g., suggesting a 2.5% increase if reps are consistently hit).
 *   **Social Leaderboards:** Compare Total Volume lifted this month with friends.
 *   **Rest Timer Notifications:** Web Push APIs to alert the user when their 90-second rest is over, even if the app is backgrounded.
-*   **AI Analytics:** Basic insights ("Your chest volume dropped 20% this week. Try adding an isolation movement.")
 
 ## 7. Dependencies & Constraints
 *   **Database:** Firebase Firestore (NoSQL) is the backbone. Security rules must aggressively protect `users/{uid}/...` paths.
 *   **Hosting:** GitHub Pages / Vercel (Must support HTTPS for PWA and Web Share APIs).
 *   **Browser Support:** Web Share API functionality is dependent on iOS Safari / Chrome Android mobile environments. Fallbacks (Download Image) must remain intact for desktop.
+*   **Backend & Secret Management:** Requires Firebase Cloud Functions (v2) and Anthropic Claude API. Must run on Firebase Blaze (pay-as-you-go) plan, and the API key is secured via Google Cloud Secret Manager.

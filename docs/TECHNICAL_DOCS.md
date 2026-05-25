@@ -39,6 +39,12 @@ FitPulse is an **Offline-First Progressive Web App (PWA)** built on a Vanilla We
 - Generates a branded layout detailing user statistics.
 - Utilizes `navigator.share()` (Web Share API) to pass the generated BLOB directly to native OS intents (Instagram Stories, Messages).
 
+### 2.5 AI Set Scanner
+- **Camera Access:** Uses standard HTML5 file inputs with `accept="image/*"` and `capture="environment"` to trigger the native camera interface in standalone PWAs across iOS and Android.
+- **Canvas Image Compression:** Compresses image inputs on-the-fly using the HTML5 Canvas API, resizing to a maximum of 800px on either side and iteratively lowering the WebP quality parameter until the base64-encoded output size is under 100KB.
+- **Client/Server Cache Synchronization:** Generates an FNV-1a hash of the compressed base64 image data to check both an in-memory session cache Map and a Firestore `scanCache` collection, preventing redundant Cloud Function and Claude API calls.
+- **Dual-Model Fallback Proxy:** Implements a Firebase Cloud Function that proxies image requests securely to Anthropic. If the cheaper Claude Haiku v4.5 fails to return a parseable JSON schema or encounters a vision error, the function transparently falls back to Claude Sonnet v4.6.
+
 ---
 
 ## 3. Database Schema & API Reference (Firestore)
@@ -80,7 +86,14 @@ Logs of completed workouts. Used extensively by the gamification engine to retro
       "weight": 80,
       "reps": 8,
       "sets": 4,
-      "notes": "Felt good"
+      "notes": "Felt good",
+      "scan": {
+        "confidence": 0.92,
+        "model": "claude-haiku-4-5",
+        "exerciseOverride": false,
+        "weightOverride": true,
+        "scanSessionId": "hash123"
+      }
     }
   ]
 }
@@ -110,6 +123,21 @@ User-created workout templates.
 }
 ```
 
+### 3.5 `users/{userId}/scanCache/{imageHash}`
+Stores caching information for image analysis results to reduce Cloud Function billing.
+```json
+{
+  "imageHash": "abc123hash",
+  "exercise": "Lat Pulldown (Wide bar)",
+  "weight_kg": 45,
+  "confidence": 0.92,
+  "model": "claude-haiku-4-5",
+  "createdAt": "serverTimestamp()",
+  "expiresAt": "Timestamp(serverTimestamp() + 90min)",
+  "hitCount": 2
+}
+```
+
 ---
 
 ## 4. Key JavaScript APIs (`app.js` & `firebase-config.js`)
@@ -120,3 +148,8 @@ User-created workout templates.
 *   `loadSessionsFromCloud()`: Fetches the last 50 workout history documents on boot for UI population and badge calculation.
 *   `setupThemeToggle()`: Injected UI hook for live DOM mutation between Light/Dark variants.
 *   `renderFlexCanvas()`: The 2D rendering engine construct stringing UI text into rasterized pixels for export.
+*   `setupScanner()`: Inits camera/modal hooks, file-upload listeners, step navigation flow, and result confirmation UI.
+*   `compressImage(file)`: Compresses user-captured images utilizing HTML Canvas, downscaling dimensions (max 800px) and iteratively reducing quality parameter to force output size `<100KB` WebP.
+*   `fnvHash(str)`: Generates an 8-character FNV-1a hash key from image data base64 string to check cache entries.
+*   `callIdentifyWorkout(photo1Base64, photo2Base64, imageHash)`: Front-end wrapper calling the v2 `identifyWorkoutSet` Firebase Cloud Function.
+
