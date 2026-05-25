@@ -1968,7 +1968,7 @@ function renderScanResult(result) {
 
     exerciseEl.textContent = result.exercise || 'Unknown Exercise';
     weightEl.textContent = result.weight_kg > 0
-        ? ${result.weight_kg} 
+        ? `${result.weight_kg} ${result.unit || 'kg'}`
         : 'Weight not detected';
 
     // Confidence bar
