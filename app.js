@@ -1815,8 +1815,9 @@ function setupScanner() {
     if (!openBtn || !modal) return;
 
     openBtn.addEventListener('click', () => {
-        if (!isLoggedIn) {
-            showToast('Sign in to use the AI Scanner', 'error');
+        const hasLocalKey = !!localStorage.getItem('fitpulse_claude_api_key');
+        if (!isLoggedIn && !hasLocalKey) {
+            showToast('Sign in or add a local Claude API Key under Account 🔑', 'error');
             return;
         }
         resetScanner();
