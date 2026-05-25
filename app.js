@@ -205,6 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupExerciseAutocomplete();
     setupRoutinesUI();
     setupThemeToggle();
+    setupScanner();
 
     // Start session timer when first exercise is logged
     if (todayExercises.length > 0 && !sessionStartTime) {
@@ -1769,4 +1770,278 @@ function showToast(message, type = 'success') {
     toast.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span> ${message}`;
     container.appendChild(toast);
     setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3000);
+}
+
+// ===== AI SET SCANNER =====
+const scanSessionCache = new Map(); // hash -> { result, timestamp }
+let scanPhoto1Base64 = null;
+let scanPhoto2Base64 = null;
+let scanPhoto1Hash = null;
+let lastScanResult = null;
+
+function setupScanner() {
+    const openBtn = document.getElementById('btn-open-scanner');
+    const modal = document.getElementById('scanner-modal');
+    const closeBtn = document.getElementById('scanner-close');
+    const photoExInput = document.getElementById('photo-exercise');
+    const photoWtInput = document.getElementById('photo-weight');
+    const previewEx = document.getElementById('preview-exercise');
+    const previewWt = document.getElementById('preview-weight');
+    const nextBtn = document.getElementById('btn-next-weight');
+    const identifyBtn = document.getElementById('btn-identify');
+    const confirmBtn = document.getElementById('btn-confirm-scan');
+    const retryBtn = document.getElementById('btn-retry-scan');
+
+    if (!openBtn || !modal) return;
+
+    openBtn.addEventListener('click', () => {
+        if (!isLoggedIn) {
+            showToast('Sign in to use the AI Scanner', 'error');
+            return;
+        }
+        resetScanner();
+        modal.style.display = 'flex';
+    });
+
+    closeBtn.addEventListener('click', () => { modal.style.display = 'none'; });
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+
+    // Step 1: Capture exercise photo
+    photoExInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const compressed = await compressImage(file);
+        scanPhoto1Base64 = compressed.base64;
+        scanPhoto1Hash = fnvHash(compressed.base64);
+        previewEx.src = compressed.uri;
+        previewEx.style.display = 'block';
+        nextBtn.style.display = 'flex';
+    });
+
+    // Next button -> Step 2
+    nextBtn.addEventListener('click', () => {
+        setScannerStep(2);
+    });
+
+    // Step 2: Capture weight photo
+    photoWtInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const compressed = await compressImage(file);
+        scanPhoto2Base64 = compressed.base64;
+        previewWt.src = compressed.uri;
+        previewWt.style.display = 'block';
+        identifyBtn.style.display = 'flex';
+    });
+
+    // Identify button -> Step 3 (analyzing) -> Step 4 (result)
+    identifyBtn.addEventListener('click', handleScanSubmit);
+
+    // Confirm -> pre-fill form
+    confirmBtn.addEventListener('click', () => {
+        if (lastScanResult) confirmScan(lastScanResult);
+    });
+
+    // Retry -> reset
+    retryBtn.addEventListener('click', () => {
+        resetScanner();
+    });
+}
+
+function resetScanner() {
+    scanPhoto1Base64 = null;
+    scanPhoto2Base64 = null;
+    scanPhoto1Hash = null;
+    lastScanResult = null;
+
+    document.getElementById('photo-exercise').value = '';
+    document.getElementById('photo-weight').value = '';
+    document.getElementById('preview-exercise').style.display = 'none';
+    document.getElementById('preview-weight').style.display = 'none';
+    document.getElementById('btn-next-weight').style.display = 'none';
+    document.getElementById('btn-identify').style.display = 'none';
+
+    setScannerStep(1);
+}
+
+function setScannerStep(step) {
+    const phases = ['phase-exercise', 'phase-weight', 'phase-analyzing', 'phase-result'];
+    phases.forEach((id, i) => {
+        document.getElementById(id).style.display = (i === step - 1) ? 'block' : 'none';
+    });
+
+    // Update step dots
+    for (let i = 1; i <= 3; i++) {
+        const dot = document.getElementById('dot-' + i);
+        dot.classList.remove('active', 'done');
+        if (i < step) dot.classList.add('done');
+        if (i === step || (step === 4 && i === 3)) dot.classList.add('active');
+    }
+
+    // Update step lines
+    const lines = document.querySelectorAll('.scanner-step-line');
+    lines.forEach((line, i) => {
+        line.classList.toggle('done', i < step - 1);
+    });
+}
+
+async function handleScanSubmit() {
+    if (!scanPhoto1Base64 || !scanPhoto2Base64) {
+        showToast('Please capture both photos first', 'error');
+        return;
+    }
+
+    // Check in-memory cache
+    if (scanPhoto1Hash && scanSessionCache.has(scanPhoto1Hash)) {
+        const cached = scanSessionCache.get(scanPhoto1Hash);
+        if (Date.now() - cached.timestamp < 90 * 60 * 1000) {
+            lastScanResult = cached.result;
+            setScannerStep(4);
+            renderScanResult(cached.result);
+            return;
+        }
+    }
+
+    // Show analyzing state
+    setScannerStep(3);
+
+    try {
+        // 15s timeout
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('timeout')), 15000)
+        );
+        const apiPromise = callIdentifyWorkout(scanPhoto1Base64, scanPhoto2Base64, scanPhoto1Hash);
+        const result = await Promise.race([apiPromise, timeoutPromise]);
+
+        lastScanResult = result;
+
+        // Cache it
+        if (scanPhoto1Hash && result.confidence >= 0.50) {
+            scanSessionCache.set(scanPhoto1Hash, { result, timestamp: Date.now() });
+        }
+
+        setScannerStep(4);
+        renderScanResult(result);
+
+    } catch (err) {
+        console.error('Scanner error:', err);
+        if (err.message === 'timeout') {
+            showToast('Scan timed out. Try again or log manually.', 'error');
+        } else {
+            showToast('Scan failed. Please try again.', 'error');
+        }
+        setScannerStep(1);
+        resetScanner();
+    }
+}
+
+function renderScanResult(result) {
+    const exerciseEl = document.getElementById('scan-result-exercise');
+    const weightEl = document.getElementById('scan-result-weight');
+    const barFill = document.getElementById('confidence-bar-fill');
+    const confValue = document.getElementById('confidence-value');
+    const notesEl = document.getElementById('scan-result-notes');
+
+    const conf = Math.round((result.confidence || 0) * 100);
+
+    exerciseEl.textContent = result.exercise || 'Unknown Exercise';
+    weightEl.textContent = result.weight_kg > 0
+        ? ${result.weight_kg} 
+        : 'Weight not detected';
+
+    // Confidence bar
+    barFill.style.width = conf + '%';
+    barFill.className = 'confidence-bar-fill';
+    if (conf >= 80) barFill.classList.add('high');
+    else if (conf >= 50) barFill.classList.add('medium');
+    else barFill.classList.add('low');
+
+    confValue.textContent = conf + '%';
+    confValue.style.color = conf >= 80 ? 'var(--primary)' : conf >= 50 ? '#f59e0b' : 'var(--danger)';
+
+    // Notes
+    if (result.notes) {
+        notesEl.textContent = result.notes;
+        notesEl.style.display = 'block';
+    } else {
+        notesEl.style.display = 'none';
+    }
+}
+
+function confirmScan(result) {
+    const modal = document.getElementById('scanner-modal');
+
+    // Pre-fill the workout form
+    if (result.exercise) {
+        document.getElementById('exercise-name').value = result.exercise;
+    }
+    if (result.weight_kg > 0) {
+        document.getElementById('exercise-weight').value = result.weight_kg;
+    }
+
+    // Focus reps field so user can finish quickly
+    document.getElementById('exercise-reps').focus();
+
+    modal.style.display = 'none';
+    showToast('Exercise identified! Review and submit. 🎯', 'success');
+}
+
+// ===== IMAGE COMPRESSION (Canvas API) =====
+async function compressImage(file) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                // Resize to max 800px preserving aspect ratio
+                const MAX_DIM = 800;
+                let w = img.width;
+                let h = img.height;
+                if (w > MAX_DIM || h > MAX_DIM) {
+                    if (w > h) {
+                        h = Math.round(h * MAX_DIM / w);
+                        w = MAX_DIM;
+                    } else {
+                        w = Math.round(w * MAX_DIM / h);
+                        h = MAX_DIM;
+                    }
+                }
+                canvas.width = w;
+                canvas.height = h;
+                ctx.drawImage(img, 0, 0, w, h);
+
+                // Compress with decreasing quality until < 100KB
+                const qualities = [0.75, 0.60, 0.45, 0.30];
+                let dataUrl;
+                let base64;
+                for (const q of qualities) {
+                    dataUrl = canvas.toDataURL('image/webp', q);
+                    base64 = dataUrl.split(',')[1];
+                    const sizeKb = Math.round(base64.length * 0.75 / 1024);
+                    if (sizeKb < 100) break;
+                }
+
+                resolve({
+                    uri: dataUrl,
+                    base64: base64,
+                    sizeKb: Math.round(base64.length * 0.75 / 1024),
+                });
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// ===== FNV-1a HASH =====
+function fnvHash(str) {
+    let hash = 0x811c9dc5;
+    for (let i = 0; i < str.length; i++) {
+        hash ^= str.charCodeAt(i);
+        hash = (hash * 0x01000193) >>> 0;
+    }
+    return hash.toString(16);
 }

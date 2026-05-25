@@ -201,7 +201,12 @@
             <form class="workout-form card" id="workout-form">
                 <div class="form-group" style="position: relative;">
                     <label for="exercise-name">Exercise Name</label>
-                    <input type="text" id="exercise-name" placeholder="e.g. Bench Press, Squat, Deadlift..." required autocomplete="off">
+                    <div class="exercise-input-row">
+                        <input type="text" id="exercise-name" placeholder="e.g. Bench Press, Squat, Deadlift..." required autocomplete="off">
+                        <button type="button" class="btn-scan" id="btn-open-scanner" title="AI Set Scanner">
+                            <span class="material-symbols-rounded">photo_camera</span>
+                        </button>
+                    </div>
                     <div id="exercise-dropdown" class="autocomplete-dropdown" style="display: none;"></div>
                 </div>
 
@@ -500,10 +505,95 @@
     <!-- Toast Notification -->
     <div class="toast-container" id="toast-container"></div>
 
+    <!-- AI Set Scanner Modal -->
+    <div class="modal-overlay" id="scanner-modal" style="display:none;">
+        <div class="modal-card scanner-modal-card">
+            <div class="modal-header">
+                <h2>AI Set Scanner</h2>
+                <button class="modal-close" id="scanner-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <!-- Step indicators -->
+                <div class="scanner-steps">
+                    <div class="scanner-step-dot active" id="dot-1">1</div>
+                    <div class="scanner-step-line"></div>
+                    <div class="scanner-step-dot" id="dot-2">2</div>
+                    <div class="scanner-step-line"></div>
+                    <div class="scanner-step-dot" id="dot-3">3</div>
+                </div>
+
+                <!-- Step 1: Capture exercise photo -->
+                <div class="scanner-phase" id="phase-exercise">
+                    <div class="scanner-prompt">
+                        <span class="scanner-prompt-icon">📸</span>
+                        <h3>Step 1: Exercise Position</h3>
+                        <p>Take a photo of your exercise form or the machine you're using</p>
+                    </div>
+                    <label class="scanner-capture-btn" for="photo-exercise">
+                        <span class="material-symbols-rounded">add_a_photo</span>
+                        <span>Take Photo</span>
+                    </label>
+                    <input type="file" accept="image/*" capture="environment" id="photo-exercise" class="scanner-file-input">
+                    <img id="preview-exercise" class="scanner-preview" style="display:none;">
+                    <button class="btn btn-primary" id="btn-next-weight" style="display:none; width:100%; justify-content:center;">Next: Capture Weight →</button>
+                </div>
+
+                <!-- Step 2: Capture weight photo -->
+                <div class="scanner-phase" id="phase-weight" style="display:none;">
+                    <div class="scanner-prompt">
+                        <span class="scanner-prompt-icon">🏋️</span>
+                        <h3>Step 2: Weight Indicator</h3>
+                        <p>Take a photo of the weight stack, plates, or dumbbell label</p>
+                    </div>
+                    <label class="scanner-capture-btn" for="photo-weight">
+                        <span class="material-symbols-rounded">add_a_photo</span>
+                        <span>Take Photo</span>
+                    </label>
+                    <input type="file" accept="image/*" capture="environment" id="photo-weight" class="scanner-file-input">
+                    <img id="preview-weight" class="scanner-preview" style="display:none;">
+                    <button class="btn btn-primary" id="btn-identify" style="display:none; width:100%; justify-content:center;">
+                        <span class="material-symbols-rounded" style="font-size:1.1rem;">auto_awesome</span>
+                        Identify Exercise
+                    </button>
+                </div>
+
+                <!-- Step 3: Analyzing -->
+                <div class="scanner-phase" id="phase-analyzing" style="display:none;">
+                    <div class="scanner-analyzing">
+                        <div class="pulse-loader"><span></span><span></span><span></span></div>
+                        <h3>Identifying your exercise...</h3>
+                        <p class="scanner-analyzing-sub">Claude AI is analyzing your photos</p>
+                    </div>
+                </div>
+
+                <!-- Step 4: Result -->
+                <div class="scanner-phase" id="phase-result" style="display:none;">
+                    <div class="scan-result-card" id="scan-result-card">
+                        <div class="scan-result-exercise" id="scan-result-exercise">--</div>
+                        <div class="scan-result-weight" id="scan-result-weight">-- kg</div>
+                        <div class="scan-result-confidence">
+                            <span class="confidence-label">Confidence</span>
+                            <div class="confidence-bar-track">
+                                <div class="confidence-bar-fill" id="confidence-bar-fill"></div>
+                            </div>
+                            <span class="confidence-value" id="confidence-value">--%</span>
+                        </div>
+                        <div class="scan-result-notes" id="scan-result-notes" style="display:none;"></div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:var(--space-sm); margin-top:var(--space-md);">
+                        <button class="btn btn-primary" id="btn-confirm-scan" style="width:100%; justify-content:center;">Use This ✓</button>
+                        <button class="btn btn-secondary" id="btn-retry-scan" style="width:100%; justify-content:center;">Scan Again</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDK (compat for vanilla JS) -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
     <script src="firebase-config.js"></script>
     <script src="app.js"></script>
 </body>

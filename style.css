@@ -1875,3 +1875,238 @@ body::before {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+
+/* ===== AI Set Scanner ===== */
+.exercise-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+.exercise-input-row input {
+    flex: 1;
+    min-width: 0;
+}
+.btn-scan {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--primary);
+    background: rgba(80, 200, 120, 0.08);
+    color: var(--primary);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    flex-shrink: 0;
+}
+.btn-scan:hover {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 0 16px rgba(80, 200, 120, 0.3);
+}
+.btn-scan .material-symbols-rounded {
+    font-size: 1.3rem;
+}
+
+.scanner-modal-card {
+    max-width: 440px;
+    width: 94%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+.scanner-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: var(--space-lg);
+}
+.scanner-step-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border: 2px solid var(--border-color);
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    transition: all 0.3s ease;
+}
+.scanner-step-dot.active {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 0 12px rgba(80, 200, 120, 0.3);
+}
+.scanner-step-dot.done {
+    border-color: var(--primary);
+    background: rgba(80, 200, 120, 0.15);
+    color: var(--primary);
+}
+.scanner-step-line {
+    width: 40px;
+    height: 2px;
+    background: var(--border-color);
+    transition: background 0.3s ease;
+}
+.scanner-step-line.done {
+    background: var(--primary);
+}
+
+.scanner-phase {
+    animation: fadeSlideUp 0.35s ease;
+}
+@keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.scanner-prompt {
+    text-align: center;
+    margin-bottom: var(--space-lg);
+}
+.scanner-prompt-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: var(--space-sm);
+}
+.scanner-prompt h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+    color: var(--text-primary);
+}
+.scanner-prompt p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.scanner-file-input {
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+.scanner-capture-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 28px var(--space-lg);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-lg);
+    background: var(--bg-card-hover);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    margin-bottom: var(--space-md);
+}
+.scanner-capture-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(80, 200, 120, 0.06);
+}
+.scanner-capture-btn .material-symbols-rounded {
+    font-size: 2rem;
+}
+
+.scanner-preview {
+    width: 100%;
+    max-height: 220px;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    margin-bottom: var(--space-md);
+}
+
+.scanner-analyzing {
+    text-align: center;
+    padding: var(--space-xl) 0;
+}
+.scanner-analyzing h3 {
+    margin: var(--space-md) 0 4px 0;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+.scanner-analyzing-sub {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Scan Result Card */
+.scan-result-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    text-align: center;
+}
+.scan-result-exercise {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+.scan-result-weight {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--primary);
+    margin-bottom: var(--space-md);
+}
+.scan-result-confidence {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+.confidence-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+.confidence-bar-track {
+    flex: 1;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background: var(--bg-card-hover);
+    overflow: hidden;
+}
+.confidence-bar-fill {
+    height: 100%;
+    border-radius: var(--radius-full);
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
+    width: 0%;
+}
+.confidence-bar-fill.high   { background: var(--primary); }
+.confidence-bar-fill.medium { background: #f59e0b; }
+.confidence-bar-fill.low    { background: var(--danger); }
+
+.confidence-value {
+    font-size: 0.85rem;
+    font-weight: 700;
+    min-width: 36px;
+    text-align: right;
+}
+
+.scan-result-notes {
+    margin-top: var(--space-sm);
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    padding: 8px 12px;
+    background: var(--bg-card-hover);
+    border-radius: var(--radius-sm);
+}

@@ -464,3 +464,18 @@ async function syncLocalToCloud() {
 const saveWorkoutToCloud = saveSessionToCloud;
 const loadWorkoutsFromCloud = loadSessionsFromCloud;
 const deleteWorkoutFromCloud = deleteSessionFromCloud;
+
+// =============================================
+//   AI SET SCANNER — Cloud Function Callable
+// =============================================
+const functions = firebase.functions();
+
+async function callIdentifyWorkout(photo1Base64, photo2Base64, imageHash) {
+    const identifyFn = functions.httpsCallable('identifyWorkoutSet');
+    const result = await identifyFn({
+        photo1: photo1Base64,
+        photo2: photo2Base64,
+        hash: imageHash,
+    });
+    return result.data;
+}
